@@ -264,7 +264,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			}
 			echo '</select>';
 
-			echo '<input type="submit" id="doaction2" name="export_csv" class="button action" value="'. __( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. __( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
 
 		}
 
