@@ -4,10 +4,10 @@ Contributors: zealopensource
 Donate Link: http://www.zealousweb.com/payment/
 Tags: geolocation, wordpress, contact form 7
 Requires at least: 4.9 or higher
-Tested up to: 5.7
+Tested up to: 6.0.1
 Requires PHP: 7.0
 License: GPLv3 or later License
-Version: 1.3
+Version: 1.4
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Description ==
@@ -58,6 +58,10 @@ Our professional impassioned Wordpress experts provide profound and customer-ori
 Thank you for choosing a Plugin developed by <strong>[ZealousWeb](https://www.zealousweb.com)</strong>!
 
 == Changelog ==
+
+= 1.4 =
+* Fix Export CSV bug issue solved.
+
 = 1.3 =
 * Compatibility with new cf7 version
 
