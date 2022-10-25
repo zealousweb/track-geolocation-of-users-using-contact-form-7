@@ -311,6 +311,18 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 											$new_data[] = ($geolocation_data['cfgeo-lat-long'])? 'Latitude/Longitude: ' . $geolocation_data['cfgeo-lat-long'] : 'Latitude/Longitude: ';
 										}
 
+										if($total_att > 1 && $att == 'lat' && $geolocation_data != ''){
+                                            $lat_long_sep = ($geolocation_data['cfgeo-lat-long']) ? explode(",",$geolocation_data['cfgeo-lat-long']) : array();
+											$lat = (count($lat_long_sep) > 1) ? $lat_long_sep[0] : '';
+											$new_data[] = 'Latitude: ' . $lat;
+										}
+
+										if($total_att > 1 && $att == 'long' && $geolocation_data != ''){
+											$lat_long_sep = ($geolocation_data['cfgeo-lat-long']) ? explode(",",$geolocation_data['cfgeo-lat-long']) : array();
+											$long = (count($lat_long_sep) > 1) ? $lat_long_sep[1] : '';
+											$new_data[] = 'Longitude: ' . $long;
+										}
+
 										if($total_att > 1 && $att == 'city' && $geolocation_data != ''){
 											$new_data[] = ($geolocation_data['cfgeo-city']) ? 'City: '. $geolocation_data['cfgeo-city'] : 'City: ';
 										}

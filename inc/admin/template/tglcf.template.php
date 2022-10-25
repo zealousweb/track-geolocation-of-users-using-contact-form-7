@@ -117,6 +117,14 @@ if(isset($_GET["tab"])){
 					<td><input type="text" value="[geolocation lat-long]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
+					<td>'. __('To add just latitude.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation lat]" style="width: 100%;color: #000;" disabled=""></td>
+				</tr>
+				<tr>
+					<td>'. __('To add just longitude.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation long]" style="width: 100%;color: #000;" disabled=""></td>
+				</tr>				
+				<tr>
 					<td>'. __('To add just country.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation country]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
