@@ -12,7 +12,7 @@ Form a Specific Visual chart to get to know where the visitors are more.
 5. Click ‘Activate Plugin’ to activate it.
 
 # How To Use
-You have to configure it from wp-admin > Contact > Add/Edit Contact Forms (Contact Form 7 needs to be activated before).
+You have to configure it from wp-admin > Contact > Add/Edit Contact Forms and short code added (Contact Form 7 needs to be activated before).
 
 shows setting option to be enabled to get Google Map static image in the email.
 
@@ -25,6 +25,10 @@ shows all the possible options available for this plugin.
 This area shows a detailed graph on the basis of submitted forms.
 
 ![Screenshot](resources/img/image-3.png)
+
+This is show list of all form users.
+
+![Screenshot](resources/img/image-4.png)
 
 # Getting Help
 If you have any difficulties while using this Plugin, please feel free to contact us at opensource@zealousweb.com. We also offer custom WordPress extension development and WordPress theme design services to fulfill your e-commerce objectives. Our professional dy‐ namic WordPress experts provide profound and customer-oriented development of your project within short timeframes. Thank you for choosing a Plugin developed by ZealousWeb!
