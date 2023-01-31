@@ -12,4 +12,5 @@ Form a Specific Visual chart to get to know where the visitors are more.
 5. Click ‘Activate Plugin’ to activate it.
 
 # How To Use
-
+You have to configure it from wp-admin > Contact > Add/Edit Contact Forms (Contact Form 7 needs to be activated before).
+![Screenshot](resources/img/image-1.png)
