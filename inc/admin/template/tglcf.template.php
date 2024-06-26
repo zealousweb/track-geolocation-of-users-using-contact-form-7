@@ -4,13 +4,15 @@
 *
 * @package WordPress
 * @subpackage Track Geolocation Of Users Using Contact Form 7
-* @since 1.3
+* @since 2.0
 **/
+
 $form_graph_url    = admin_url("admin.php?page=geolocation-setting&tab=cfgeo-submission-graph&form-id=");
 $google_api        = get_option('cfgeo_google_api_key');
 $country_cnt       = $this->cfgeo_get_meta_values( 'cfgeo-country' );
 $google_api_link   = 'https://developers.google.com/maps/documentation/geolocation/get-api-key';
 $cfgeo_graph_color = get_option( 'cfgeo_color_picker' );
+
 if($cfgeo_graph_color == ''){
 	// if no color selected this color will be show by default
 	$cfgeo_graph_color = '#0073aa';

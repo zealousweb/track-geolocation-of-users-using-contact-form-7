@@ -6,7 +6,7 @@
  *
  * @package WordPress
  * @subpackage Track Geolocation Of Users Using Contact Form 7
- * @since 1.3
+ * @since 2.0
  */
 
 // Exit if accessed directly

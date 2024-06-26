@@ -3,7 +3,7 @@
  * Plugin Name: Track Geolocation Of Users Using Contact Form 7
  * Plugin URL: https://wordpress.org/plugins/track-geolocation-of-users-using-contact-form-7/
  * Description: Fetch Geolocation of user when user submits contact form 7.
- * Version: 1.4
+ * Version: 2.0
  * Author: ZealousWeb
  * Author URI: https://www.zealousweb.com
  * Developer: The Zealousweb Team
@@ -23,11 +23,11 @@ if ( !defined( 'ABSPATH' ) ) exit;
  * Basic plugin definitions
  *
  * @package Track Geolocation Of Users Using Contact Form 7
- * @since 1.3
+ * @since 2.0
  */
 
 if ( !defined( 'CFGEO_VERSION' ) ) {
-	define( 'CFGEO_VERSION', '1.4' ); // Version of plugin
+	define( 'CFGEO_VERSION', '2.0' ); // Version of plugin
 }
 
 if ( !defined( 'CFGEO_FILE' ) ) {
