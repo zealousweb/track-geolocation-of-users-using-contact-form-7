@@ -580,7 +580,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 * @param  [int] $postid [Postid]
 		 * @return [array]         [Geolocation Details]
 		 */
-		function cfgeo_get_location( $ip = '', $postid ){
+		function cfgeo_get_location( $postid, $ip = ''){
 			$ipstack_access = get_option('cfgeo_ipstack_access');
 			if($ipstack_access != ''){
 				$request = $this->cfgeo_ipstack($ip, $postid);

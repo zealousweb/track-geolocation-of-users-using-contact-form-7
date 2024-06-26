@@ -152,15 +152,15 @@ if(isset($_GET["tab"])){
 
 	// Localize the script with new data
 	$translation_array = array(
-		'ipstack'		=> __( '<h3>ipstack API Access Key</h3>' .
+		'ipstack'		=> esc_html( '<h3>ipstack API Access Key</h3>' .
 								'<p>Enter Your ipstack API Access Key Which you can get it by signing up for Free Plan from <a href="https://ipstack.com/signup/free" target="_blank">here</a>.
 								</p>','track-geolocation-of-users-using-contact-form-7' ),
-		'google'		=> __( '<h3>Google Map Geolocation API Key</h3>' .
+		'google'		=> esc_html( '<h3>Google Map Geolocation API Key</h3>' .
 								'<p>Get You Google Map API key from <a href="'.$google_api_link.'" target="_blank">here</a> and make sure "Maps Static API" is Enabled.
 								</p>','track-geolocation-of-users-using-contact-form-7' ),
-		'debug'			=> __( '<h3>Debug Mode</h3>' .
+		'debug'			=> esc_html( '<h3>Debug Mode</h3>' .
 								'<p>Enabling the debug mode will help us to track any issue with the API.</p>','track-geolocation-of-users-using-contact-form-7' ),
-		'graphcolor'	=> __( '<h3>Color Picker</h3>' .
+		'graphcolor'	=> esc_html( '<h3>Color Picker</h3>' .
 								'<p>Click on the textbox to Select the Color for Submission Graph.</p>','track-geolocation-of-users-using-contact-form-7' ),
 		'form_graph_url'=> $form_graph_url,
 		'google_api'	=> $google_api,

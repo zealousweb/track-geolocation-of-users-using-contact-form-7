@@ -89,18 +89,19 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 							if(is_array($value)){
 								$value = implode(', ', $value);
 							}
+							
 							if ( $key == '_form_id' ) {
-								$row[$key] = __(
-									(
-										'_form_id' == $key
-										&& !empty( get_the_title( get_post_meta( $entry->ID, $key, true ) ) )
-									)
-									? get_the_title( get_post_meta( $entry->ID, $key, true ) )
-									: get_post_meta( $entry->ID, $key, true )
-								);
-							}else{
+								$meta_value = get_post_meta( $entry->ID, $key, true );
+							
+								if ( ! empty( $meta_value ) && '_form_id' == $key ) {
+									$row[$key] = get_the_title( $meta_value );
+								} else {
+									$row[$key] = $meta_value;
+								}
+							} else {
 								$row[$key] = $value;
 							}
+							
 						}
 						$data_rows[] = $row;
 					}
@@ -170,39 +171,26 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		function action__manage_cfgeozw_data_posts_custom_column( $column, $post_id ) {
 			switch ( $column ) {
 				case 'country' :
-					echo (
-						!empty( get_post_meta( $post_id , 'cfgeo-country', true ) )
-						? get_post_meta( $post_id , 'cfgeo-country', true )
-						: ''
-					);
-				break;
-
+					$country = get_post_meta( $post_id , 'cfgeo-country', true );
+					echo !empty( $country ) ? esc_html( $country ) : '';
+					break;
+		
 				case 'state' :
-					echo (
-						!empty( get_post_meta( $post_id , 'cfgeo-state', true ) )
-						? get_post_meta( $post_id , 'cfgeo-state', true )
-						: ''
-					);
-				break;
-
+					$state = get_post_meta( $post_id , 'cfgeo-state', true );
+					echo !empty( $state ) ? esc_html( $state ) : '';
+					break;
+		
 				case 'lat_long' :
-					echo (
-						!empty( get_post_meta( $post_id , 'cfgeo-lat-long', true ) )
-						? get_post_meta( $post_id , 'cfgeo-lat-long', true )
-						: ''
-					);
-				break;
-
+					$lat_long = get_post_meta( $post_id , 'cfgeo-lat-long', true );
+					echo !empty( $lat_long ) ? esc_html( $lat_long ) : '';
+					break;
+		
 				case 'api_key_used' :
-					echo (
-						!empty( get_post_meta( $post_id , 'cfgeo-api-used', true ) )
-						? get_post_meta( $post_id , 'cfgeo-api-used', true )
-						: ''
-					);
-				break;
-
+					$api_key_used = get_post_meta( $post_id , 'cfgeo-api-used', true );
+					echo !empty( $api_key_used ) ? esc_html( $api_key_used ) : '';
+					break;
 			}
-		}
+		}		
 
 		/**
 		 * Action: pre_get_posts
@@ -258,13 +246,13 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			$selected = ( isset( $_GET['form-id'] ) ? sanitize_text_field($_GET['form-id']) : '' );
 
 			echo '<select name="form-id" id="form-id">';
-			echo '<option value="all">' . __( 'Select Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+			echo '<option value="all">' . esc_html( 'Select Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 			foreach ( $posts as $post ) {
-				echo '<option value="' . $post->ID . '" ' . selected( $selected, $post->ID, false ) . '>' . $post->post_title  . '</option>';
+				echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
 			}
 			echo '</select>';
 
-			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. __( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. esc_html( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
 
 		}
 
@@ -299,7 +287,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		function action__cfgeodb_admin_notices_export() {
 			echo '<div class="error">' .
 				'<p>' .
-					__( 'Please select Form to export.', 'track-geolocation-of-users-using-contact-form-7' ) .
+					esc_html( 'Please select Form to export.', 'track-geolocation-of-users-using-contact-form-7' ) .
 				'</p>' .
 			'</div>';
 		}
@@ -334,7 +322,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				if ( !empty( $meta['_form_id'] ) ) {
 					echo '<tr class="form-field">' .
 							'<th scope="row">' .
-								'<label for="hcf_author">' . __( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+								'<label for="hcf_author">' . esc_html( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 							'</th>' .
 							'<td>' .
 								(
@@ -342,8 +330,8 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 										$meta['_form_id'] != ''
 										&& !empty( get_the_title( $meta['_form_id'] ) )
 									)
-									? get_the_title( $meta['_form_id'] )
-									: $meta['_form_id']
+									? esc_html( get_the_title( $meta['_form_id'] ) )
+									: esc_html( $meta['_form_id'] )
 								) .
 							'</td>' .
 						'</tr>';
@@ -354,19 +342,22 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 							if(is_array($value)){
 								$value = implode(', ', $value);
 							}
+							$translated_label = ucwords($rmv_cfgeo);
 							echo '<tr class="form-field">' .
-									'<th scope="row">' .
-										'<label for="hcf_author">' . __( sprintf( '%s', ucwords($rmv_cfgeo) ), 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
-									'</th>' .
-									'<td>' . $value .
+									'<th scope="row">
+										<label for="hcf_author">' . 
+											esc_html($translated_label) . 
+										'</label>
+									</th>' .
+									'<td>' . esc_html($value) .
 									'</td>' .
 								'</tr>';
-						}
+							}
 					}
 					if(get_post_meta( $post->ID, 'cfgeo-debug-ipstack')){
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . __( 'Debug ipstack', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label for="hcf_author">' . esc_html( 'Debug ipstack', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . get_post_meta( $post->ID, 'cfgeo-debug-ipstack',true) .
 								'</td>' .
@@ -375,7 +366,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if(get_post_meta( $post->ID, 'cfgeo-debug-ipapi')){
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . __( 'Debug ipapi', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label for="hcf_author">' . esc_html( 'Debug ipapi', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . get_post_meta( $post->ID, 'cfgeo-debug-ipapi',true) .
 								'</td>' .
@@ -384,7 +375,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if(get_post_meta( $post->ID, 'cfgeo-debug-keycdn')){
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . __( 'Debug Keycdn', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label for="hcf_author">' . esc_html( 'Debug Keycdn', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . get_post_meta( $post->ID, 'cfgeo-debug-keycdn',true) .
 								'</td>' .
@@ -396,13 +387,13 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			echo '<!-- Entry Location metabox -->';
 			echo '<div id="cf7-entry-geolocation" class="postbox">';
 
-			echo '<h2 class="hndle"><span>' . __( 'Location', 'track-geolocation-of-users-using-contact-form-7' ) . '</span></h2>';
+			echo '<h2 class="hndle"><span>' . esc_html( 'Location', 'track-geolocation-of-users-using-contact-form-7' ) . '</span></h2>';
 
 			echo '<div class="inside">';
 
 			if ( empty( $meta['cfgeo-lat-long'] ) ){
 
-				echo '<p style="padding:0 10px 10px;">' . __( 'Unable to load location data for this entry. This usually means CF7-Geolocation was unable to process the user\'s IP address or it is non-standard format.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
+				echo '<p style="padding:0 10px 10px;">' . esc_html( 'Unable to load location data for this entry. This usually means CF7-Geolocation was unable to process the user\'s IP address or it is non-standard format.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
 
 			}else{
 

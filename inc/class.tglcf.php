@@ -154,11 +154,8 @@ if ( !class_exists( 'CFGEO' ) ) {
 		 */
 		function action__cfgeo_admin_notices_deactive() {
 			echo '<div class="error">' .
-					sprintf(
-						__( '<p><strong><a href="https://wordpress.org/plugins/contact-form-7/" target="_blank">Contact Form 7</a></strong> is required to use <strong>%s</strong>.</p>', 'track-geolocation-of-users-using-contact-form-7' ),
-						'Track Geolocation Of Users Using Contact Form 7'
-					) .
-				'</div>';
+				'<p><strong><a href="' . esc_url( 'https://wordpress.org/plugins/contact-form-7/' ) . '" target="_blank">Contact Form 7</a></strong> is required to use <strong>' . esc_html( 'Track Geolocation Of Users Using Contact Form 7' ) . '</strong>.</p>' .
+			'</div>';
 		}
 
 		/**

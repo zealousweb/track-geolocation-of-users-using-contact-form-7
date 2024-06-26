@@ -7,7 +7,7 @@
  * Author: ZealousWeb
  * Author URI: https://www.zealousweb.com
  * Developer: The Zealousweb Team
- * Developer E-Mail: opensource@zealousweb.com
+ * Developer E-Mail: support@zealousweb.com
  * Text Domain: track-geolocation-of-users-using-contact-form-7
  * Domain Path: /languages
  *
