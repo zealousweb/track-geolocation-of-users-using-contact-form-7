@@ -53,44 +53,44 @@ if ( !class_exists( 'CFGEO' ) ) {
 		 */
 		function action__cfgeo_plugins_loaded() {
 
-				if ( !is_plugin_active( 'contact-form-7/wp-contact-form-7.php' ) ) {
-					add_action( 'admin_notices', array( $this, 'action__cfgeo_admin_notices_deactive' ) );
-					deactivate_plugins( CFGEO_PLUGIN_BASENAME );
-					if ( isset( $_GET['activate'] ) ) {
-						unset( $_GET['activate'] );
-					}
+			if ( !is_plugin_active( 'contact-form-7/wp-contact-form-7.php' ) ) {
+				add_action( 'admin_notices', array( $this, 'action__cfgeo_admin_notices_deactive' ) );
+				deactivate_plugins( CFGEO_PLUGIN_BASENAME );
+				if ( isset( $_GET['activate'] ) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
+					unset( $_GET['activate'] );
 				}
+			}
 
-				# Action to load custom post type
-				add_action( 'init', array( $this, 'action__cfgeo_init' ) );
+			# Action to load custom post type
+			add_action( 'init', array( $this, 'action__cfgeo_init' ) );
 
-				global $wp_version;
+			global $wp_version;
 
-				# Set filter for plugin's languages directory
-				$CFGEO_lang_dir = dirname( CFGEO_PLUGIN_BASENAME ) . '/languages/';
-				$CFGEO_lang_dir = apply_filters( 'CFGEO_languages_directory', $CFGEO_lang_dir );
+			# Set filter for plugin's languages directory
+			$CFGEO_lang_dir = dirname( CFGEO_PLUGIN_BASENAME ) . '/languages/';
+			$CFGEO_lang_dir = apply_filters( 'CFGEO_languages_directory', $CFGEO_lang_dir );
 
-				# Traditional WordPress plugin locale filter.
-				$get_locale = get_locale();
+			# Traditional WordPress plugin locale filter.
+			$get_locale = get_locale();
 
-				if ( $wp_version >= 4.7 ) {
-					$get_locale = get_user_locale();
-				}
+			if ( $wp_version >= 4.7 ) {
+				$get_locale = get_user_locale();
+			}
 
-				# Traditional WordPress plugin locale filter
-				$locale = apply_filters( 'plugin_locale',  $get_locale, 'track-geolocation-of-users-using-contact-form-7' );
-				$mofile = sprintf( '%1$s-%2$s.mo', 'track-geolocation-of-users-using-contact-form-7', $locale );
+			# Traditional WordPress plugin locale filter
+			$locale = apply_filters( 'plugin_locale',  $get_locale, 'track-geolocation-of-users-using-contact-form-7' );
+			$mofile = sprintf( '%1$s-%2$s.mo', 'track-geolocation-of-users-using-contact-form-7', $locale );
 
-				# Setup paths to current locale file
-				$mofile_global = WP_LANG_DIR . '/plugins/' . basename( CFGEO_DIR ) . '/' . $mofile;
+			# Setup paths to current locale file
+			$mofile_global = WP_LANG_DIR . '/plugins/' . basename( CFGEO_DIR ) . '/' . $mofile;
 
-				if ( file_exists( $mofile_global ) ) {
-					# Look in global /wp-content/languages/plugin-name folder
-					load_textdomain( 'track-geolocation-of-users-using-contact-form-7', $mofile_global );
-				} else {
-					# Load the default language files
-					load_plugin_textdomain( 'track-geolocation-of-users-using-contact-form-7', false, $CFGEO_lang_dir );
-				}
+			if ( file_exists( $mofile_global ) ) {
+				# Look in global /wp-content/languages/plugin-name folder
+				load_textdomain( 'track-geolocation-of-users-using-contact-form-7', $mofile_global );
+			} else {
+				# Load the default language files
+				load_plugin_textdomain( 'track-geolocation-of-users-using-contact-form-7', false, $CFGEO_lang_dir );
+			}
 		}
 
 		/**
@@ -176,29 +176,15 @@ if ( !class_exists( 'CFGEO' ) ) {
 		 *
 		 */
 		function action__cfgeo_plugin_redirect() {
-			if ( class_exists( 'WPCF7' ) ) {
-				// Check if cfgeo_activation_redirect option is set
-				if ( get_option( 'cfgeo_activation_redirect', false ) ) {
-					// Delete the cfgeo_activation_redirect option
-					delete_option( 'cfgeo_activation_redirect' );
-			
-					// Verify nonce before redirecting
-					$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-			
-					if ( ! empty( $nonce ) && wp_verify_nonce( $nonce, 'cfgeo_activation_redirect_nonce' ) ) {
-						// Proceed with redirect only if nonce verification succeeds
-						if ( ! isset( $_GET['activate-multi'] ) ) {
-							// Redirect to the specified admin page
-							wp_redirect( admin_url( 'admin.php?page=' . self::$setting_page ) );
-							exit;
-						}
-					} else {
-						// Nonce verification failed or nonce is empty
-						wp_die( 'Nonce verification failed. Redirect aborted.' );
+			if ( class_exists('WPCF7') ) {
+				if (get_option('cfgeo_activation_redirect', false)) {
+					delete_option('cfgeo_activation_redirect');
+					if(!isset($_GET['activate-multi']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
+					{
+						wp_redirect( admin_url( 'admin.php?page=' . self::$setting_page ) );
 					}
 				}
 			}
-			
 		}
 	}
 }

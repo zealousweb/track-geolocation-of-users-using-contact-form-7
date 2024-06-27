@@ -49,122 +49,88 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		function action__cfgeo_init() {
 			wp_register_style( CFGEO_PREFIX . '_admin_css', CFGEO_URL . 'assets/css/admin.min.css', array(), CFGEO_VERSION );
 			wp_register_style( CFGEO_PREFIX . '_spectrum_css', CFGEO_URL . 'assets/css/spectrum.min.css', array(), CFGEO_VERSION );
-			wp_register_script( CFGEO_PREFIX . '_spectrum_js', CFGEO_URL . 'assets/js/spectrum.min.js', array( 'jquery-core' ), CFGEO_VERSION ,true);
-			wp_register_script( CFGEO_PREFIX . '_admin_js', CFGEO_URL . 'assets/js/admin.min.js', array( 'jquery-core' ), CFGEO_VERSION ,true);
-			wp_register_script( CFGEO_PREFIX . '_graph_js', CFGEO_URL . 'assets/js/graph.min.js', array( 'jquery-core' ), CFGEO_VERSION , true);
-			wp_register_script( CFGEO_PREFIX . '_loader_js', 'https://www.gstatic.com/charts/loader.js', array( 'jquery-core' ), CFGEO_VERSION ,true );
+			wp_register_script( CFGEO_PREFIX . '_spectrum_js', CFGEO_URL . 'assets/js/spectrum.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
+			wp_register_script( CFGEO_PREFIX . '_admin_js', CFGEO_URL . 'assets/js/admin.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
+			wp_register_script( CFGEO_PREFIX . '_graph_js', CFGEO_URL . 'assets/js/graph.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
+			wp_register_script( CFGEO_PREFIX . '_loader_js', 'https://www.gstatic.com/charts/loader.js', array( 'jquery-core' ), CFGEO_VERSION,true);
 		}
 
 		/**
 		 * [action__cfgeo_init_99 Used to perform the CSV export functionality.]
 		 */
 		function action__cfgeo_init_99() {
-			// Verify nonce
-			$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( $_REQUEST['_wpnonce'] ) : '';
-
-			if ( ! isset( $_REQUEST['export_csv'] ) || ! wp_verify_nonce( $nonce, 'export_csv_action' ) ) {
-				// Nonce verification failed, handle error or redirect
-				wp_die( 'Security check failed. Please try again.' );
-			}
-			// Proceed with CSV export logic
-			if ( isset( $_REQUEST['form-id'] ) && ! empty( $_REQUEST['form-id'] ) && $_REQUEST['post_type'] == CFGEO_POST_TYPE ) {
+			
+			if (isset( $_REQUEST['export_csv'] ) && isset( $_REQUEST['form-id'] ) && !empty( $_REQUEST['form-id'] && $_REQUEST['post_type'] == CFGEO_POST_TYPE) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
 				$form_id = $_REQUEST['form-id'];
-		
+
 				if ( 'all' == $form_id ) {
 					add_action( 'admin_notices', array( $this, 'action__cfgeodb_admin_notices_export' ) );
 					return;
 				}
-		
 				$args = array(
-					'post_type'      => CFGEO_POST_TYPE,
+					'post_type' => CFGEO_POST_TYPE,
 					'posts_per_page' => -1
 				);
-		
+
 				$exported_data = get_posts( $args );
-		
-				if ( empty( $exported_data ) ) {
+				if ( empty( $exported_data ) ){
 					return;
 				}
-		
-				// Prepare CSV data
+
+				/** CSV Export **/
 				$filename = 'cfgeo-' . $form_id . '-' . time() . '.csv';
-				$data_rows = array();
-		
-				foreach ( $exported_data as $entry ) {
-					$single_data = unserialize( get_post_meta( $entry->ID, '_form_data', true ) );
-					$row = array();
-		
-					foreach ( $single_data as $key => $value ) {
-						if ( is_array( $value ) ) {
-							$value = implode( ', ', $value );
-						}
-		
-						if ( $key == '_form_id' ) {
-							$meta_value = get_post_meta( $entry->ID, $key, true );
-		
-							if ( ! empty( $meta_value ) && '_form_id' == $key ) {
-								$row[$key] = get_the_title( $meta_value );
-							} else {
-								$row[$key] = $meta_value;
+				/** Prepare CSV Header **/
+				$data = unserialize( get_post_meta( $exported_data[0]->ID, '_form_data', true ) );
+				$header_row = $this->csv_header($data);
+
+				if( !empty( $exported_data ) ) {
+					foreach ( $exported_data as $entry ) {
+						$single_data = unserialize( get_post_meta( $entry->ID, '_form_data', true ) );
+						$row = array();
+			
+						foreach ( $single_data as $key => $value ) {
+							if ( is_array( $value ) ) {
+								$value = implode( ', ', $value );
 							}
-						} else {
-							$row[$key] = $value;
+			
+							if ( $key == '_form_id' ) {
+								$meta_value = get_post_meta( $entry->ID, $key, true );
+			
+								if ( ! empty( $meta_value ) && '_form_id' == $key ) {
+									$row[$key] = get_the_title( $meta_value );
+								} else {
+									$row[$key] = $meta_value;
+								}
+							} else {
+								$row[$key] = $value;
+							}
 						}
+			
+						$data_rows[] = array_map( 'sanitize_text_field', $row );
 					}
-		
-					$data_rows[] = array_map( 'sanitize_text_field', $row );
 				}
-		
-				// Output CSV file using WP_Filesystem
-				global $wp_filesystem;
-		
-				if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
-					require_once ABSPATH . '/wp-admin/includes/file.php';
-					WP_Filesystem();
-				}
-		
-				if ( ! $wp_filesystem ) {
-					// Failed to initialize filesystem, handle error
-					return;
-				}
-		
-				$upload_dir = wp_upload_dir();
-				$csv_file = trailingslashit( $upload_dir['basedir'] ) . $filename;
-		
-				if ( ! $wp_filesystem->put_contents( $csv_file, '' ) ) {
-					// Failed to create or write to file, handle error
-					return;
-				}
-		
-				$handle = $wp_filesystem->open( $csv_file, 'w' );
-		
-				if ( ! $handle ) {
-					// Failed to open file handle, handle error
-					return;
-				}
-		
-				$wp_filesystem->put_contents( $csv_file, "\xEF\xBB\xBF", FILE_APPEND );
-		
-				// Write CSV header row
-				$header_row = array_keys( $data_rows[0] );
-				$wp_filesystem->put_contents( $csv_file, implode( ',', array_map( 'sanitize_text_field', $header_row ) ) . "\n", FILE_APPEND );
-		
-				// Write CSV data rows
-				foreach ( $data_rows as $data_row ) {
-					$wp_filesystem->put_contents( $csv_file, implode( ',', array_map( 'sanitize_text_field', $data_row ) ) . "\n", FILE_APPEND );
-				}
-		
-				$wp_filesystem->close( $handle );
-		
-				// Serve the file for download
-				header( 'Content-Type: application/csv' );
+
+				ob_start();
+
+				$fh = @fopen( 'php://output', 'w' );
+				fprintf( $fh, chr(0xEF) . chr(0xBB) . chr(0xBF) );
+				header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+				header( 'Content-Description: File Transfer' );
+				header( 'Content-type: text/csv; charset=UTF-8' );
 				header( "Content-Disposition: attachment; filename={$filename}" );
-				$wp_filesystem->readfile( $csv_file );
-				exit;
+				header( 'Expires: 0' );
+				header( 'Pragma: public' );
+				fputcsv( $fh, array_values(array_map('sanitize_text_field',$header_row)) );
+				foreach ( $data_rows as $data_row ) {
+					fputcsv( $fh, $data_row );
+				}
+				//fclose( $fh );
+
+				ob_end_flush();
+				die();
+
 			}
 		}
-		
-		
 
 		/**
 		 * [csv_header csv header title]
@@ -227,7 +193,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					echo !empty( $api_key_used ) ? esc_html( $api_key_used ) : '';
 					break;
 			}
-		}		
+		}
 
 		/**
 		 * Action: pre_get_posts
@@ -280,12 +246,8 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				return;
 			}
 
-			$selected = '';
-
-			if ( isset( $_GET['form-id'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'select_form_action' ) ) {
-				$selected = sanitize_text_field( $_GET['form-id'] );
-			}
-
+			$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ) ) ? sanitize_text_field($_GET['form-id']) : '' ;
+			
 			echo '<select name="form-id" id="form-id">';
 			echo '<option value="all">' . esc_html( 'Select Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 			foreach ( $posts as $post ) {
@@ -307,37 +269,16 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		 * @param  object $query WP_Query
 		 */
 		function action__cfgeo_parse_query( $query ) {
-			// Check if it's not admin or not the specified post type, return early
-			if ( ! is_admin() || ! in_array( $query->get( 'post_type' ), array( CFGEO_POST_TYPE ) ) ) {
+			if (! is_admin() || !in_array ( $query->get( 'post_type' ), array( CFGEO_POST_TYPE ) )){
 				return;
 			}
-		
-			// Verify nonce
-			$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-		
-			if ( ! isset( $_GET['form-id'] ) || ! wp_verify_nonce( $nonce, 'your_action_nonce' ) ) {
-				// Nonce verification failed, handle error or redirect
-				wp_die( 'Security check failed. Please try again.' );
+
+			if (is_admin() && isset( $_GET['form-id'] )	&& 'all' != $_GET['form-id'] || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
+				$query->query_vars['meta_value']   = sanitize_text_field($_GET['form-id']);
+				$query->query_vars['meta_compare'] = '=';
 			}
-		
-			// Proceed with query modification based on form ID
-			if ( isset( $_GET['form-id'] ) && 'all' !== $_GET['form-id'] ) {
-				$form_id = sanitize_text_field( $_GET['form-id'] );
-		
-				// Set up meta query for 'form_id'
-				$meta_query = array(
-					array(
-						'key'     => 'form_id',
-						'value'   => $form_id,
-						'compare' => '=',
-					),
-				);
-		
-				// Add meta query to existing WP_Query args
-				$query->set( 'meta_query', $meta_query );
-			}
+
 		}
-		
 
 		/**
 		 * Action: admin_notices
@@ -383,67 +324,70 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 				if ( !empty( $meta['_form_id'] ) ) {
 					echo '<tr class="form-field">' .
-							'<th scope="row">' .
-								'<label for="hcf_author">' . esc_html( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
-							'</th>' .
-							'<td>' .
+						'<th scope="row">' .
+							'<label for="hcf_author">' . esc_html( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+						'</th>' .
+						'<td>' .
+							(
 								(
-									(
-										$meta['_form_id'] != ''
-										&& !empty( get_the_title( $meta['_form_id'] ) )
-									)
-									? esc_html( get_the_title( $meta['_form_id'] ) )
-									: esc_html( $meta['_form_id'] )
-								) .
-							'</td>' .
-						'</tr>';
+									$meta['_form_id'] != ''
+									&& !empty( get_the_title( $meta['_form_id'] ) )
+								)
+								? esc_html( get_the_title( $meta['_form_id'] ) )
+								: esc_html( $meta['_form_id'] )
+							) .
+						'</td>' .
+					'</tr>';
+					
 					foreach ($meta as $key => $value) {
 						if (strpos($key, '_') !== 0) {
 							$label_name = str_replace('-', ' ', $key);
 							$rmv_cfgeo = str_replace('cfgeo', '', $label_name);
-							if(is_array($value)){
+							if (is_array($value)) {
 								$value = implode(', ', $value);
 							}
-							$translated_label = ucwords($rmv_cfgeo);
+				
 							echo '<tr class="form-field">' .
-									'<th scope="row">
-										<label for="hcf_author">' . 
-											esc_html($translated_label) . 
-										'</label>
-									</th>' .
-									'<td>' . esc_html($value) .
+									'<th scope="row">' .
+										'<label for="hcf_author">' . esc_html( sprintf( '%s', ucwords($rmv_cfgeo) ), 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'</th>' .
+									'<td>' . esc_html( $value ) .
 									'</td>' .
 								'</tr>';
-							}
+						}
 					}
-					if(get_post_meta( $post->ID, 'cfgeo-debug-ipstack')){
+				
+					if (get_post_meta( $post->ID, 'cfgeo-debug-ipstack', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
 									'<label for="hcf_author">' . esc_html( 'Debug ipstack', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
-								'<td>' . esc_html(get_post_meta( $post->ID, 'cfgeo-debug-ipstack',true)) .
+								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-ipstack', true ) ) .
 								'</td>' .
 							'</tr>';
 					}
-					if(get_post_meta( $post->ID, 'cfgeo-debug-ipapi')){
+				
+					if (get_post_meta( $post->ID, 'cfgeo-debug-ipapi', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
 									'<label for="hcf_author">' . esc_html( 'Debug ipapi', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
-								'<td>' . esc_html(get_post_meta( $post->ID, 'cfgeo-debug-ipapi',true)) .
+								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-ipapi', true ) ) .
 								'</td>' .
 							'</tr>';
 					}
-					if(get_post_meta( $post->ID, 'cfgeo-debug-keycdn')){
+				
+					if (get_post_meta( $post->ID, 'cfgeo-debug-keycdn', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
 									'<label for="hcf_author">' . esc_html( 'Debug Keycdn', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
-								'<td>' . esc_html(get_post_meta( $post->ID, 'cfgeo-debug-keycdn',true)) .
+								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-keycdn', true ) ) .
 								'</td>' .
 							'</tr>';
 					}
 				}
+				
 
 			echo '</table>';
 			echo '<!-- Entry Location metabox -->';
@@ -481,14 +425,13 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					apply_filters(
 						CFGEO_PREFIX . '/help/cfgeo_data/postbox',
 						'<ol>' .
-							'<li><a href="' . esc_url( 'https://www.zealousweb.com/wordpress-plugins/track-geolocation-of-users-using-contact-form-7/' ) . '" target="_blank">Refer the document.</a></li>' .
-							'<li><a href="' . esc_url( 'mailto:opensource@zealousweb.com' ) . '" target="_blank">Contact Us</a></li>' .
+							'<li><a href="' . esc_url( 'https://store.zealousweb.com/track-geolocation-of-users-using-contact-form-7' ) . '" target="_blank">Refer the document.</a></li>' .
+							'<li><a href="' . esc_url( 'mailto:support@zealousweb.com' ) . '" target="_blank">Contact Us</a></li>' .
 						'</ol>'
 					)
 				) .
 			'</div>';
 		}
-		
 	}
 
 	add_action( 'plugins_loaded', function() {
