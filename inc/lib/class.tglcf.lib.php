@@ -63,45 +63,39 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		/**
 		 * [cfgeo_display_options Add & Register field for settings page.]
 		*/
-		function cfgeo_display_options(){
-			if ( get_option( 'cfgeo_debug_mode' ) === false ){ // Nothing yet saved
-				update_option( 'cfgeo_debug_mode', 1 );
-			}
-			if(isset($_GET["tab"]))
-			{
-				//Add a new section to a settings page.
-				add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
-				if($_GET["tab"] == "cfgeo-setting")
-				{
-					//Add a new section to a settings page.
+		function cfgeo_display_options() {
+			// Verify nonce
+			if (isset($_POST['cfgeo_settings_nonce']) && wp_verify_nonce($_POST['cfgeo_settings_nonce'], 'cfgeo_settings_nonce_action')) {
+				
+				if (isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-setting") {
+					// Add settings section and fields
 					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
-					//Add a new field to a section of a settings page.
-					add_settings_field("cfgeo_debug_mode",     __("<label>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$setting_page, "cfgeo_googleapi");
-					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
-					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
-					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
-
-					//Registers a setting and its data.
+					add_settings_field("cfgeo_debug_mode", __("Enable Debug Mode", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$setting_page, "cfgeo_googleapi");
+					add_settings_field("cfgeo_color_picker", __("Select Color of the Graph", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
+					add_settings_field("cfgeo_google_api_key", __("Google Map API Key", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
+					add_settings_field("cfgeo_ipstack_access", __("Access Token For IPstack", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
+		
+					// Register settings
 					register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
 					register_setting("cfgeo_googleapi", "cfgeo_google_api_key");
 					register_setting("cfgeo_googleapi", "cfgeo_ipstack_access");
 				}
-			}else{
-					//Add a new section to a settings page.
-					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
-					//Add a new field to a section of a settings page.
-					add_settings_field("cfgeo_debug_mode",     __("<label>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$setting_page, "cfgeo_googleapi");
-					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
-					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
-					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
-
-					//Registers a setting and its data.
-					register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
-					register_setting("cfgeo_googleapi", "cfgeo_color_picker");
-					register_setting("cfgeo_googleapi", "cfgeo_google_api_key");
-					register_setting("cfgeo_googleapi", "cfgeo_ipstack_access");
 			}
+		
+			// Add settings section and fields
+			add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
+			add_settings_field("cfgeo_debug_mode", __("Enable Debug Mode", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$setting_page, "cfgeo_googleapi");
+			add_settings_field("cfgeo_color_picker", __("Select Color of the Graph", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
+			add_settings_field("cfgeo_google_api_key", __("Google Map API Key", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
+			add_settings_field("cfgeo_ipstack_access", __("Access Token For IPstack", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
+		
+			// Register settings
+			register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
+			register_setting("cfgeo_googleapi", "cfgeo_color_picker");
+			register_setting("cfgeo_googleapi", "cfgeo_google_api_key");
+			register_setting("cfgeo_googleapi", "cfgeo_ipstack_access");
 		}
+		
 
 		/**
 		 * Action: CF7 before send email
@@ -409,12 +403,12 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 * @return [html] [message]
 		 */
 		function cfgeo_display_header_content(){
-			if(isset($_GET["tab"])){
+			if(isset($_GET["tab"]) && isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 				if($_GET["tab"] == "cfgeo-setting"){
-					echo "<br>You can get your Google Map API key from ".'<a href="'.self::$google_api_link.'" target="_blank">here</a>';
+					echo '<br>You can get your Google Map API key from <a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'text-domain' ) . '</a>';
 				}
 			}else{
-				echo "<br>You can get your Google Map API key from ".'<a href="'.self::$google_api_link.'" target="_blank">here</a>';
+				echo '<br>You can get your Google Map API key from <a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'text-domain' ) . '</a>';
 			}
 		}
 
@@ -439,7 +433,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		{
 			$option = get_option($args[0]);
 			//id and name of form element should be same as the setting name.
-			echo '<input type="text" name="'. $args[0] .'" id="'. $args[0] .'" value="' . $option . '" class="'. $args[0] .'" size="50" />';
+			echo '<input type="text" name="' . esc_attr( $args[0] ) . '" id="' . esc_attr( $args[0] ) . '" value="' . esc_attr( $option ) . '" class="' . esc_attr( $args[0] ) . '" size="50" />';
 		}
 
 		/**
@@ -451,43 +445,83 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 * @return [array]            [country and its entry count]
 		 */
 		function cfgeo_get_meta_values( $key = '', $type = CFGEO_POST_TYPE, $status = 'publish', $form_meta = '_form_id' ) {
-			global $wpdb;
-			$selected = ( isset( $_GET['form-id'] ) ? sanitize_text_field($_GET['form-id']) : '' );
-
-			if( empty( $key ) )
-				return;
+			// Sanitize inputs
+			$key = sanitize_text_field( $key );
+			$type = sanitize_text_field( $type );
+			$status = sanitize_text_field( $status );
+			$form_meta = sanitize_text_field( $form_meta );
+		
+			// Verify nonce
+			$nonce = isset( $_GET['nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['nonce'] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, 'your_nonce_action_name_here' ) ) {
+				wp_die( 'Nonce verification failed.' );
+			}
+		
+			// Sanitize and validate form-id
+			$selected = isset( $_GET['form-id'] ) ? sanitize_text_field( wp_unslash( $_GET['form-id'] ) ) : '';
+		
+			// Prepare query args
+			$args = array(
+				'post_type' => $type,
+				'post_status' => $status,
+				'fields' => 'ids', // Fetch only post IDs for performance
+				'meta_query' => array(
+					array(
+						'key' => $key,
+						'compare' => 'EXISTS', // Check if meta key exists
+					),
+				),
+			);
+		
+			// Optionally filter by form-meta
+			if ( $selected !== '' && $selected !== 'all' ) {
+				$args['meta_query'][] = array(
+					'key' => $form_meta,
+					'value' => $selected,
+					'compare' => '=',
+				);
+			}
+		
+			// Fetch posts
+			$query = new WP_Query( $args );
+		
 			$metas = array();
 			$final_country_cnt = array();
-			$get_country_post = $wpdb->get_results( $wpdb->prepare( "
-				SELECT p.ID, pm.meta_value FROM {$wpdb->postmeta} pm
-				LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				WHERE pm.meta_key = '%s'
-				AND p.post_status = '%s'
-				AND p.post_type = '%s'
-			", $key, $status, $type ));
-			foreach ( $get_country_post as $get_country_data ){
-				if($get_country_data->meta_value != ''){
-					if($selected == '' || $selected == 'all'){
-						$metas[] = $get_country_data->meta_value;
-					}else{
-						if(get_post_meta( $get_country_data->ID, $form_meta, true) == $selected){
-							$metas[] = $get_country_data->meta_value;
-						}
+		
+			if ( $query->have_posts() ) {
+				while ( $query->have_posts() ) {
+					$query->the_post();
+					$meta_value = get_post_meta( get_the_ID(), $key, true );
+					if ( $meta_value !== '' ) {
+						$metas[] = $meta_value;
 					}
 				}
+				wp_reset_postdata();
 			}
-			// $final_country_cnt[] = "['".$key."' ,".$value."]";
-			if($metas){
-				$cnt_entry = array_count_values($metas);
-				foreach ($cnt_entry as $key => $value) {
-					$new = array();
-					$new['ctrname'] = $key;
-					$new['etr'] = $value;
-					$final_country_cnt[] = $new;
+		
+			// Count occurrences of each meta_value
+			if ( $metas ) {
+				$cnt_entry = array_count_values( $metas );
+				foreach ( $cnt_entry as $key => $value ) {
+					$final_country_cnt[] = array(
+						'ctrname' => $key,
+						'etr' => $value,
+					);
 				}
 			}
-			return json_encode($final_country_cnt);
+		
+			// Cache the results
+			$cache_key = 'cfgeo_meta_values_' . md5( serialize( compact( 'key', 'type', 'status', 'form_meta', 'selected' ) ) );
+			wp_cache_set( $cache_key, wp_json_encode( $final_country_cnt ) );
+		
+			return wp_json_encode( $final_country_cnt );
 		}
+		
+		
+		
+		
+		
+		
 
 		/**
 		 * [cfgeo_insert_post_title Insert post]
@@ -731,17 +765,31 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		* @return string
 		*/
 		function cfgeo_upload_tmp_dir() {
-
+			
+			// Initialize the WP_Filesystem.
+			$filesystem = WP_Filesystem();
+		
+			// Check if initialization was successful.
+			if ( !$filesystem ) {
+				// Handle error if WP_Filesystem could not be initialized.
+				return false; // Or handle error in your preferred way.
+			}
+		
 			$upload = wp_upload_dir();
 			$upload_dir = $upload['basedir'];
 			$cfgeo_upload_dir = $upload_dir . '/cfgeodb_uploads';
-
-			if ( !is_dir( $cfgeo_upload_dir ) ) {
-				mkdir( $cfgeo_upload_dir, 0755 );
+		
+			// Create directory using WP_Filesystem.
+			if ( !$filesystem->is_dir( $cfgeo_upload_dir ) ) {
+				if ( !$filesystem->mkdir( $cfgeo_upload_dir, 0755 ) ) {
+					// Handle error if directory creation failed.
+					return false; // Or handle error in your preferred way.
+				}
 			}
-
+		
 			return $cfgeo_upload_dir;
 		}
+		
 
 		/**
 		 * Copy the attachment into the plugin folder.
@@ -755,44 +803,87 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 * @return array
 		 */
 		function cfgeo_upload_files( $attachment, $version ) {
-			if( empty( $attachment ) )
+			if ( empty( $attachment ) ) {
 				return;
-
+			}
+		
 			$new_attachment = $attachment;
-
+			$new_attachment_file = array();
+		
+			// Initialize the WP_Filesystem.
+			$filesystem = WP_Filesystem();
+		
+			// Check if initialization was successful.
+			if ( !$filesystem ) {
+				// Handle error if WP_Filesystem could not be initialized.
+				return $new_attachment_file; // Or handle error in your preferred way.
+			}
+		
 			foreach ( $attachment as $key => $value ) {
 				$tmp_name = $value;
 				$uploads_dir = wpcf7_maybe_add_random_dir( $this->cfgeo_upload_tmp_dir() );
-				foreach ($tmp_name as $newkey => $file_path) {
+		
+				foreach ( $tmp_name as $newkey => $file_path ) {
 					$get_file_name = explode( '/', $file_path );
 					$new_uploaded_file = path_join( $uploads_dir, end( $get_file_name ) );
-					if ( copy( $file_path, $new_uploaded_file ) ) {
-						chmod( $new_uploaded_file, 0755 );
-						if($version == 'old'){
+		
+					// Use WP_Filesystem to copy file.
+					if ( $filesystem->copy( $file_path, $new_uploaded_file, true ) ) {
+						// Set appropriate permissions using WP_Filesystem.
+						$filesystem->chmod( $new_uploaded_file, 0644 );
+		
+						// Assign the new file path to the array based on version.
+						if ( $version == 'old' ) {
 							$new_attachment_file[$newkey] = $new_uploaded_file;
-						}else{
+						} else {
 							$new_attachment_file[$key] = $new_uploaded_file;
 						}
 					}
 				}
 			}
+		
 			return $new_attachment_file;
 		}
+		
 
 		/**
 		 * [cfgeo_custom_logs Custom Log.]
 		 * @param  [string] $message [Error Log Message]
 		 * @return [string]          [description]
 		 */
-		function cfgeo_custom_logs($message) {
-			//log format: postid - error message - API name
-			if(is_array($message)) {
-				$message = json_encode($message);
+		function cfgeo_custom_logs( $message ) {
+			
+			if ( is_array( $message ) ) {
+				$message = wp_json_encode( $message );
 			}
-			$file = fopen("./wp-content/cf7-geo.log","a");
-			fwrite($file, "\n" . date('Y-m-d h:i:s') . " :: " . $message);
-			fclose($file);
+		
+			// Initialize WP_Filesystem.
+			$filesystem = WP_Filesystem();
+		
+			// Check if initialization was successful.
+			if ( !$filesystem ) {
+				return;
+			}
+		
+			// Get the path to the log file using WP_Filesystem.
+			$log_file = trailingslashit( WP_CONTENT_DIR ) . 'cf7-geo.log';
+		
+			// Open or create the log file using WP_Filesystem.
+			$file_handle = $filesystem->fopen( $log_file, 'a' );
+		
+			// Check if file handle was obtained successfully.
+			if ( $file_handle ) {
+				// Write to the log file.
+				$filesystem->fwrite( $file_handle, "\n" . gmdate( 'Y-m-d h:i:s' ) . " :: " . $message );
+		
+				// Close the file handle.
+				$filesystem->fclose( $file_handle );
+			} else {
+				// Handle error if file handle could not be obtained.
+				error_log( 'Failed to open or create log file.' );
+			}
 		}
+		
 
 		/**
 		 * Get current conatct from 7 version.

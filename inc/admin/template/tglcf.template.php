@@ -23,24 +23,38 @@ if($country_cnt){
 	$data_arr_to_str = '';
 }
 $active_tab = "cfgeo-setting";
-if(isset($_GET["tab"])){
-	if($_GET["tab"] == "cfgeo-setting"){
-		$active_tab = "cfgeo-setting";
-	}elseif($_GET["tab"] == "cfgeo-submission-graph"){
-		$active_tab = "cfgeo-submission-graph";
-	}else{
-		$active_tab = "cfgeo-shortcode-info";
-	}
+if(isset($_GET["tab"])) {
+    $nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+
+    // Verify nonce
+    if (!isset($_REQUEST['tab']) || !wp_verify_nonce($nonce, 'tab_nonce_action')) {
+        // Nonce verification failed, handle error or redirect
+        wp_die('Security check failed. Please try again.');
+    }
+
+    // Process tab parameter safely after nonce verification
+    switch ($_GET["tab"]) {
+        case "cfgeo-setting":
+            $active_tab = "cfgeo-setting";
+            break;
+        case "cfgeo-submission-graph":
+            $active_tab = "cfgeo-submission-graph";
+            break;
+        default:
+            $active_tab = "cfgeo-shortcode-info";
+            break;
+    }
 }
+
 ?>
 
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"></div>
-	<h2><?php echo self::$activation_menuname; ?></h2>
+	<h2><?php echo esc_html( self::$activation_menuname ); ?></h2>
 	<h2 class="nav-tab-wrapper">
-		<a href="?page=geolocation-setting&tab=cfgeo-setting" class="nav-tab <?php if($active_tab == 'cfgeo-setting'){echo 'nav-tab-active';} ?> "><?php _e('Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7'); ?></a>
-		<a href="?page=geolocation-setting&tab=cfgeo-submission-graph" class="nav-tab <?php if($active_tab == 'cfgeo-submission-graph'){echo 'nav-tab-active';} ?>"><?php _e('Submission Graph', 'track-geolocation-of-users-using-contact-form-7'); ?></a>
-		<a href="?page=geolocation-setting&tab=cfgeo-shortcode-info" class="nav-tab <?php if($active_tab == 'cfgeo-shortcode-info'){echo 'nav-tab-active';} ?>"><?php _e('Shortcode Info', 'track-geolocation-of-users-using-contact-form-7'); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-shortcode-info' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-shortcode-info' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Shortcode Info', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 	</h2>
 	<?php settings_errors(); ?>
 	<form method="post" action="options.php" class="setting-geolocation">
@@ -62,7 +76,7 @@ if(isset($_GET["tab"])){
 	</form>
 	<?php
 	if(isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-submission-graph"){ ?>
-		<h3><?php _e("A Detailed graph on the basis of submitted forms.",'track-geolocation-of-users-using-contact-form-7'); ?></h3>
+		<h3><?php esc_html__("A Detailed graph on the basis of submitted forms.",'track-geolocation-of-users-using-contact-form-7'); ?></h3>
 		<?php
 		$posts = get_posts(
 			array(
@@ -77,9 +91,9 @@ if(isset($_GET["tab"])){
 		}
 		$selected = ( isset( $_GET['form-id'] ) ? sanitize_text_field($_GET['form-id']) : '' );
 		echo '<select name="form-id" id="form-id-graph">';
-		echo '<option value="all">' . __( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+		echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 		foreach ( $posts as $post ) {
-			echo '<option value="' . $post->ID . '" ' . selected( $selected, $post->ID, false ) . '>' . $post->post_title  . '</option>';
+			echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
 		}
 		echo '</select>';
 		?>
@@ -101,46 +115,46 @@ if(isset($_GET["tab"])){
 		<table class="shortcode-table">
 			<thead>
 				<tr>
-					<td> <strong>'. __('Details You get in EMail.','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
-					<td> <strong>'. __('Shortcode','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
+					<td> <strong>'. esc_html__('Details You get in EMail.','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
+					<td> <strong>'. esc_html__('Shortcode','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td>'. __('To add latitude/longitude, country, state, city.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add latitude/longitude, country, state, city.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. __('To add latitude/longitude, country, state, city & Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add latitude/longitude, country, state, city & Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation lat-long country state city gmap]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. __('To add just latitude/longitude.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just latitude/longitude.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation lat-long]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. __('To add just country.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just country.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation country]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. __('To add just state.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just state.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation state]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. __('To add just city.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just city.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation city]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. __('To add just Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation gmap]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 			</tbody>
 			<tfoot>
 				<tr>
 					<td colspan="2">
-						<h3>'. __('Note: To add Google map static image in email you have to enable this 2 option.','track-geolocation-of-users-using-contact-form-7').'</h3>
-						<p> <small>'. __('1) You have to enable "Use HTML content type" in email setting of Contact form 7.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
-						<p> <small>'. __('2) You have to enable "Maps Static API" in Google Map API.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
+						<h3>'. esc_html__('Note: To add Google map static image in email you have to enable this 2 option.','track-geolocation-of-users-using-contact-form-7').'</h3>
+						<p> <small>'. esc_html__('1) You have to enable "Use HTML content type" in email setting of Contact form 7.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
+						<p> <small>'. esc_html__('2) You have to enable "Maps Static API" in Google Map API.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
 					</td>
 				</tr>
 			</tfoot>
