@@ -67,11 +67,11 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			if ( get_option( 'cfgeo_debug_mode' ) === false ){ // Nothing yet saved
 				update_option( 'cfgeo_debug_mode', 1 );
 			}
-			if(isset($_GET["tab"]))
+			if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
 			{
 				//Add a new section to a settings page.
 				add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
-				if($_GET["tab"] == "cfgeo-setting")
+				if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
 				{
 					//Add a new section to a settings page.
 					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
@@ -409,12 +409,12 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 * @return [html] [message]
 		 */
 		function cfgeo_display_header_content(){
-			if(isset($_GET["tab"])){
-				if($_GET["tab"] == "cfgeo-setting"){
-					echo "<br>You can get your Google Map API key from ".'<a href="'.self::$google_api_link.'" target="_blank">here</a>';
+			if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
+				if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
+					echo '<br>You can get your Google Map API key from <a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
 				}
 			}else{
-				echo "<br>You can get your Google Map API key from ".'<a href="'.self::$google_api_link.'" target="_blank">here</a>';
+				echo '<br>You can get your Google Map API key from <a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'text-domain' ) . '</a>';
 			}
 		}
 
@@ -439,7 +439,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		{
 			$option = get_option($args[0]);
 			//id and name of form element should be same as the setting name.
-			echo '<input type="text" name="'. $args[0] .'" id="'. $args[0] .'" value="' . $option . '" class="'. $args[0] .'" size="50" />';
+			echo '<input type="text" name="' . esc_attr( $args[0] ) . '" id="' . esc_attr( $args[0] ) . '" value="' . esc_attr( $option ) . '" class="' . esc_attr( $args[0] ) . '" size="50" />';
 		}
 
 		/**
@@ -452,7 +452,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 */
 		function cfgeo_get_meta_values( $key = '', $type = CFGEO_POST_TYPE, $status = 'publish', $form_meta = '_form_id' ) {
 			global $wpdb;
-			$selected = ( isset( $_GET['form-id'] ) ? sanitize_text_field($_GET['form-id']) : '' );
+			$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) ? sanitize_text_field($_GET['form-id']) : '' ;
 
 			if( empty( $key ) )
 				return;
@@ -461,9 +461,9 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			$get_country_post = $wpdb->get_results( $wpdb->prepare( "
 				SELECT p.ID, pm.meta_value FROM {$wpdb->postmeta} pm
 				LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				WHERE pm.meta_key = '%s'
-				AND p.post_status = '%s'
-				AND p.post_type = '%s'
+				WHERE pm.meta_key = %s
+				AND p.post_status = %s
+				AND p.post_type = %s
 			", $key, $status, $type ));
 			foreach ( $get_country_post as $get_country_data ){
 				if($get_country_data->meta_value != ''){
@@ -486,7 +486,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					$final_country_cnt[] = $new;
 				}
 			}
-			return json_encode($final_country_cnt);
+			return wp_json_encode($final_country_cnt);
 		}
 
 		/**
@@ -580,7 +580,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 * @param  [int] $postid [Postid]
 		 * @return [array]         [Geolocation Details]
 		 */
-		function cfgeo_get_location( $ip = '', $postid ){
+		function cfgeo_get_location( $ip, $postid ){
 			$ipstack_access = get_option('cfgeo_ipstack_access');
 			if($ipstack_access != ''){
 				$request = $this->cfgeo_ipstack($ip, $postid);
@@ -737,10 +737,9 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			$cfgeo_upload_dir = $upload_dir . '/cfgeodb_uploads';
 
 			if ( !is_dir( $cfgeo_upload_dir ) ) {
-				mkdir( $cfgeo_upload_dir, 0755 );
+				return $cfgeo_upload_dir;
 			}
 
-			return $cfgeo_upload_dir;
 		}
 
 		/**
@@ -755,29 +754,48 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		 * @return array
 		 */
 		function cfgeo_upload_files( $attachment, $version ) {
-			if( empty( $attachment ) )
+			if ( empty( $attachment ) ) {
 				return;
-
-			$new_attachment = $attachment;
-
+			}
+		
+			// Initialize WP_Filesystem
+			if ( ! function_exists( 'WP_Filesystem' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+			WP_Filesystem();
+		
+			global $wp_filesystem;
+		
+			if ( ! $wp_filesystem || ! is_object( $wp_filesystem ) ) {
+				// Filesystem initialization failed, handle error
+				return;
+			}
+		
+			$new_attachment_file = array();
+		
 			foreach ( $attachment as $key => $value ) {
 				$tmp_name = $value;
 				$uploads_dir = wpcf7_maybe_add_random_dir( $this->cfgeo_upload_tmp_dir() );
-				foreach ($tmp_name as $newkey => $file_path) {
+				
+				foreach ( $tmp_name as $newkey => $file_path ) {
 					$get_file_name = explode( '/', $file_path );
 					$new_uploaded_file = path_join( $uploads_dir, end( $get_file_name ) );
-					if ( copy( $file_path, $new_uploaded_file ) ) {
-						chmod( $new_uploaded_file, 0755 );
-						if($version == 'old'){
-							$new_attachment_file[$newkey] = $new_uploaded_file;
-						}else{
-							$new_attachment_file[$key] = $new_uploaded_file;
+		
+					if ( $wp_filesystem->copy( $file_path, $new_uploaded_file, true ) ) {
+						$wp_filesystem->chmod( $new_uploaded_file, 0755 );
+		
+						if ( $version == 'old' ) {
+							$new_attachment_file[ $newkey ] = $new_uploaded_file;
+						} else {
+							$new_attachment_file[ $key ] = $new_uploaded_file;
 						}
 					}
 				}
 			}
+		
 			return $new_attachment_file;
 		}
+		
 
 		/**
 		 * [cfgeo_custom_logs Custom Log.]
@@ -787,11 +805,32 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		function cfgeo_custom_logs($message) {
 			//log format: postid - error message - API name
 			if(is_array($message)) {
-				$message = json_encode($message);
+				$message = wp_json_encode($message);
 			}
-			$file = fopen("./wp-content/cf7-geo.log","a");
-			fwrite($file, "\n" . date('Y-m-d h:i:s') . " :: " . $message);
-			fclose($file);
+			if ( ! function_exists( 'WP_Filesystem' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+			WP_Filesystem();
+		
+			global $wp_filesystem;
+		
+			if ( ! $wp_filesystem || ! is_object( $wp_filesystem ) ) {
+				// Filesystem initialization failed, handle error
+				return;
+			}
+		
+			// Path to the log file
+			$log_file = trailingslashit( WP_CONTENT_DIR ) . 'cf7-geo.log';
+		
+			// Append to the log file
+			$current_time = gmdate('Y-m-d h:i:s');
+			$log_content = "\n" . $current_time . " :: " . $message;
+		
+			if ( ! $wp_filesystem->exists( $log_file ) ) {
+				$wp_filesystem->put_contents( $log_file, '', FS_CHMOD_FILE );
+			}
+		
+			$wp_filesystem->append_to_file( $log_file, $log_content );
 		}
 
 		/**
