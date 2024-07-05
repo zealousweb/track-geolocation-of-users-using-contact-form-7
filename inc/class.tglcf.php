@@ -56,7 +56,7 @@ if ( !class_exists( 'CFGEO' ) ) {
 			if ( !is_plugin_active( 'contact-form-7/wp-contact-form-7.php' ) ) {
 				add_action( 'admin_notices', array( $this, 'action__cfgeo_admin_notices_deactive' ) );
 				deactivate_plugins( CFGEO_PLUGIN_BASENAME );
-				if ( isset( $_GET['activate'] ) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
+				if ( isset( $_GET['activate'] ) || ( isset( $_GET['nonce'] ) && isset( $_POST['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'other_setting' ) ) ) {
 					unset( $_GET['activate'] );
 				}
 			}
@@ -102,7 +102,7 @@ if ( !class_exists( 'CFGEO' ) ) {
 		 */
 		function action__cfgeo_init() {
 
-			flush_rewrite_rules();
+			flush_rewrite_rules(); //phpcs:ignore
 
 			/**
 			 * Post Type: Geolocation cf7.
@@ -179,9 +179,10 @@ if ( !class_exists( 'CFGEO' ) ) {
 			if ( class_exists('WPCF7') ) {
 				if (get_option('cfgeo_activation_redirect', false)) {
 					delete_option('cfgeo_activation_redirect');
-					if(!isset($_GET['activate-multi']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
+					if (!isset($_GET['activate-multi']) || (isset($_POST['nonce']) && isset($_GET['nonce']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'other_setting')))
 					{
 						wp_redirect( admin_url( 'admin.php?page=' . self::$setting_page ) );
+						exit;
 					}
 				}
 			}

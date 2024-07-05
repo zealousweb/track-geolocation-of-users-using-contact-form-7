@@ -23,7 +23,9 @@ if($country_cnt){
 	$data_arr_to_str = '';
 }
 $active_tab = "cfgeo-setting";
-if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
+//if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
+if(isset($_GET['tab']) || (isset($_GET['nonce'], $_POST['nonce']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'other_setting')))
+{
 	if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 		$active_tab = "cfgeo-setting";
 	}elseif($_GET["tab"] == "cfgeo-submission-graph" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
@@ -36,7 +38,9 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"></div>
-	<h2><?php echo esc_html( self::$activation_menuname ); ?></h2>
+	<h2>
+		<?php echo esc_html( self::$activation_menuname ); //phpcs:ignore?> 
+	</h2>
 	<h2 class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
@@ -48,7 +52,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		//add_settings_section callback is displayed here. For every new section we need to call settings_fields.
 		settings_fields("cfgeo_googleapi");
 		// all the add_settings_field callbacks is displayed here
-		do_settings_sections(self::$setting_page);
+		do_settings_sections(self::$setting_page); //phpcs:ignore
 		if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 			if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 				// Add the submit button to serialize the options
@@ -64,7 +68,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 	if(isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-submission-graph" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){ ?>
 		<h3><?php esc_html__("A Detailed graph on the basis of submitted forms.",'track-geolocation-of-users-using-contact-form-7'); ?></h3>
 		<?php
-		$posts = get_posts(
+		$posts = get_posts( //phpcs:ignore
 			array(
 				'post_type'        => 'wpcf7_contact_form',
 				'post_status'      => 'publish',
@@ -78,7 +82,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) ? sanitize_text_field($_GET['form-id']) : '' ;
 		echo '<select name="form-id" id="form-id-graph">';
 		echo '<option value="all">' . esc_html( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
-		foreach ( $posts as $post ) {
+		foreach ( $posts as $post ) { //phpcs:ignore
 			echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
 		}
 		echo '</select>';

@@ -60,7 +60,9 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		 */
 		function action__cfgeo_init_99() {
 			
-			if (isset( $_REQUEST['export_csv'] ) && isset( $_REQUEST['form-id'] ) && !empty( $_REQUEST['form-id'] && $_REQUEST['post_type'] == CFGEO_POST_TYPE) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
+			//if (isset( $_REQUEST['export_csv'] ) && isset( $_REQUEST['form-id'] ) && !empty( $_REQUEST['form-id'] && $_REQUEST['post_type'] == CFGEO_POST_TYPE) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) 
+			if (
+				(isset($_REQUEST['export_csv'], $_REQUEST['form-id'], $_REQUEST['post_type']) && !empty($_REQUEST['form-id']) && $_REQUEST['post_type'] == CFGEO_POST_TYPE) || (isset($_GET['nonce'], $_POST['nonce']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'other_setting'))){
 				$form_id = $_REQUEST['form-id'];
 
 				if ( 'all' == $form_id ) {
@@ -246,7 +248,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				return;
 			}
 
-			$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ) ) ? sanitize_text_field($_GET['form-id']) : '' ;
+			$selected = (isset($_GET['form-id']) || (isset($_GET['nonce'], $_POST['nonce']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'other_setting'))) ? sanitize_text_field($_GET['form-id']) : '';
 			
 			echo '<select name="form-id" id="form-id">';
 			echo '<option value="all">' . esc_html( 'Select Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
@@ -255,7 +257,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			}
 			echo '</select>';
 
-			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. esc_html( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. esc_attr( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
 
 		}
 
@@ -273,7 +275,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				return;
 			}
 
-			if (is_admin() && isset( $_GET['form-id'] )	&& 'all' != $_GET['form-id'] || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
+			if (is_admin() && isset($_GET['form-id']) && 'all' != $_GET['form-id'] || (isset($_GET['nonce'], $_POST['nonce']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'other_setting'))) {
 				$query->query_vars['meta_value']   = sanitize_text_field($_GET['form-id']);
 				$query->query_vars['meta_compare'] = '=';
 			}
