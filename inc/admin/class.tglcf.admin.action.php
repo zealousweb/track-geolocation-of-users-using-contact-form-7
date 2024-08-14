@@ -86,23 +86,24 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				if( !empty( $exported_data ) ) {
 					foreach ( $exported_data as $entry ) {
 						$single_data = unserialize( get_post_meta( $entry->ID, '_form_data', true ) );
-						$row = array();
-			
-						foreach ( $single_data as $key => $value ) {
-							if ( is_array( $value ) ) {
-								$value = implode( ', ', $value );
-							}
-			
-							if ( $key == '_form_id' ) {
-								$meta_value = get_post_meta( $entry->ID, $key, true );
-			
-								if ( ! empty( $meta_value ) && '_form_id' == $key ) {
-									$row[$key] = get_the_title( $meta_value );
-								} else {
-									$row[$key] = $meta_value;
+						if ($single_data !== false) {
+							$row = array();
+							foreach ( $single_data as $key => $value ) {
+								if ( is_array( $value ) ) {
+									$value = implode( ', ', $value );
 								}
-							} else {
-								$row[$key] = $value;
+				
+								if ( $key == '_form_id' ) {
+									$meta_value = get_post_meta( $entry->ID, $key, true );
+				
+									if ( ! empty( $meta_value ) && '_form_id' == $key ) {
+										$row[$key] = get_the_title( $meta_value );
+									} else {
+										$row[$key] = $meta_value;
+									}
+								} else {
+									$row[$key] = $value;
+								}
 							}
 						}
 			

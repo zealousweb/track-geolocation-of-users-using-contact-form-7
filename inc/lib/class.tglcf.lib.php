@@ -198,7 +198,6 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 				add_post_meta( $ini_post_id, '_form_id', $form_id);
 				add_post_meta( $ini_post_id, '_form_data', $form_value );
 			}
-			add_filter( 'wpcf7_skip_mail', array( $this, 'cfgeo_filter__wpcf7_skip_mail' ), 20 );
 			$this->mail( $form_instance, $data ,$form_data);
 		}
 

@@ -138,8 +138,11 @@ if ( !class_exists( 'CFGEO_Admin_Filter' ) ) {
 			$settingpageLink = '<a  href="'.$settingPage.'">' . __( 'Settings Page', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
 			array_unshift( $links , $settingpageLink);
 
-			$documentLink = '<a target="_blank" href="https://www.zealousweb.com/wordpress-plugins/track-geolocation-of-users-using-contact-form-7/">' . __( 'Document Link', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
-			array_unshift( $links , $documentLink);
+			$documentLink = '<a target="_blank" href="https://store.zealousweb.com/track-geolocation-of-users-using-contact-form-7">' . __( 'Document Link', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
+
+			$donateLink = '<a target="_blank" href="http://www.zealousweb.com/payment/">' . __( 'Donate', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
+
+			array_unshift( $links , $documentLink, $donateLink);
 
 			return $links;
 		}
