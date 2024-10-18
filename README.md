@@ -4,6 +4,25 @@ Get Geolocation details including city, state, country, zip code, latitude/longi
 Send all this information including a static Google map image in the mail with a simple shortcode.
 Form a Specific Visual chart to get to know where the visitors are more.
 
+**Features of Track Geolocation Of Users Using Contact Form 7**
+
+- Get Geolocation details including city,state,country,zipcode,latitude/longitude.
+- Send all this information including a static google map image in the mail with a simple shortcode.
+- Form Specific Visual chart to get to know from where the Visitors become more.
+- We have used 2 Types of API here one is with access token key named ipstack and another is without access token which is free named ipapi & KeyCDN. So if you do not enter access token key in plugin setting then it will fetch data with the help of free API keys.
+- To add latitude/longitude, country, state, city in mail – [geolocation]
+- To add latitude/longitude, country, state, city & Google map static image in the mail – [geolocation lat-long country state city gmap]
+- To add only latitude/longitude in mail – [geolocation lat-long]
+- To add only the country in the mail- [geolocation country]
+- To add only the state in the mail – [geolocation state]
+- To add only the city in the mail – [geolocation city]
+- To add only Google map static image in the mail- [geolocation gmap]
+
+**Note:** To add Google map static image in the mail you have to enable this 2 option
+1) You have to enable Use HTML content-type in the Mail setting of Contact form 7.
+2) You have to enable Maps Static API in Google Map API.
+
+   
 # Installation
 1. Download the plugin zip file from WordPress.org plugin site to your desktop / PC
 2. If the file is downloaded as a zip archive, extract the plugin folder to your desktop.
