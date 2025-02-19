@@ -4,11 +4,11 @@ Contributors: zealopensource
 Donate Link: http://www.zealousweb.com/payment/
 Tags: geolocation,track geolocation,Google Maps
 Requires at least: 4.9 or higher
-Tested up to: 6.6
-Stable tag: 2.3
+Tested up to: 6.7
+Stable tag: 2.7
 Requires PHP: 7.0
 License: GPL-3.0-or-later
-Version: 2.3
+Version: 2.7
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Track Geolocation Of Users Using Contact Form 7 allows you to get geolocation information with their form submission.
@@ -37,7 +37,7 @@ Note: To add Google map static image in the mail you have to enable this 2 optio
 
 == Installation ==
 
-Installing the plugin is easy. Just follow these steps: 
+Installing the plugin is easy. Just follow these steps:
 
 1. From the dashboard of your site, navigate to Plugins --> Add New.
 2. Select the Upload option and hit "Choose File."
@@ -54,13 +54,26 @@ Installing the plugin is easy. Just follow these steps:
 
 If you have any difficulties while using this Plugin, please feel free to contact us at opensource@zealousweb.com
 
-We also offer custom Wordpress extension development and Wordpress theme design services to fulfill your e-commerce objectives.
+We also offer custom Wordpress extension development and Wordpress theme design services to fulfil your e-commerce objectives.
 
 Our professional impassioned Wordpress experts provide profound and customer-oriented development of your project within short timeframes.
 
 Thank you for choosing a Plugin developed by <strong>[ZealousWeb](https://www.zealousweb.com)</strong>!
 
 == Changelog ==
+
+= 2.7 =
+* Minor changes – Doc update.
+
+= 2.6 =
+* Fixed PHP warnings.
+
+= 2.5 =
+* Remove label in mail tags.
+* Fixed PHP warnings.
+
+= 2.4 =
+* Two Mail issues fixed.
 
 = 2.3 =
 * Mail issue fixed.

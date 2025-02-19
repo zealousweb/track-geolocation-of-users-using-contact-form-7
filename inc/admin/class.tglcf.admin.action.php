@@ -59,8 +59,8 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		 * [action__cfgeo_init_99 Used to perform the CSV export functionality.]
 		 */
 		function action__cfgeo_init_99() {
-			
-			if (isset( $_REQUEST['export_csv'] ) && isset( $_REQUEST['form-id'] ) && !empty( $_REQUEST['form-id'] && $_REQUEST['post_type'] == CFGEO_POST_TYPE) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
+
+			if (isset( $_REQUEST['export_csv'] ) && isset( $_REQUEST['form-id'] ) && !empty( $_REQUEST['form-id'] && $_REQUEST['post_type'] == CFGEO_POST_TYPE) ) {
 				$form_id = $_REQUEST['form-id'];
 
 				if ( 'all' == $form_id ) {
@@ -92,10 +92,10 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 								if ( is_array( $value ) ) {
 									$value = implode( ', ', $value );
 								}
-				
+
 								if ( $key == '_form_id' ) {
 									$meta_value = get_post_meta( $entry->ID, $key, true );
-				
+
 									if ( ! empty( $meta_value ) && '_form_id' == $key ) {
 										$row[$key] = get_the_title( $meta_value );
 									} else {
@@ -106,7 +106,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 								}
 							}
 						}
-			
+
 						$data_rows[] = array_map( 'sanitize_text_field', $row );
 					}
 				}
@@ -178,17 +178,17 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					$country = get_post_meta( $post_id , 'cfgeo-country', true );
 					echo !empty( $country ) ? esc_html( $country ) : '';
 					break;
-		
+
 				case 'state' :
 					$state = get_post_meta( $post_id , 'cfgeo-state', true );
 					echo !empty( $state ) ? esc_html( $state ) : '';
 					break;
-		
+
 				case 'lat_long' :
 					$lat_long = get_post_meta( $post_id , 'cfgeo-lat-long', true );
 					echo !empty( $lat_long ) ? esc_html( $lat_long ) : '';
 					break;
-		
+
 				case 'api_key_used' :
 					$api_key_used = get_post_meta( $post_id , 'cfgeo-api-used', true );
 					echo !empty( $api_key_used ) ? esc_html( $api_key_used ) : '';
@@ -248,7 +248,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			}
 
 			$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ) ) ? sanitize_text_field($_GET['form-id']) : '' ;
-			
+
 			echo '<select name="form-id" id="form-id">';
 			echo '<option value="all">' . esc_html( 'Select Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 			foreach ( $posts as $post ) {
@@ -256,7 +256,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			}
 			echo '</select>';
 
-			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. esc_html( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '"> ';
+			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. esc_html( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
 
 		}
 
@@ -274,7 +274,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				return;
 			}
 
-			if (is_admin() && isset( $_GET['form-id'] )	&& 'all' != $_GET['form-id'] || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) {
+			if (is_admin() && isset( $_GET['form-id'] )	&& 'all' != $_GET['form-id'] ) {
 				$query->query_vars['meta_value']   = sanitize_text_field($_GET['form-id']);
 				$query->query_vars['meta_compare'] = '=';
 			}
@@ -339,7 +339,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 							) .
 						'</td>' .
 					'</tr>';
-					
+
 					foreach ($meta as $key => $value) {
 						if (strpos($key, '_') !== 0) {
 							$label_name = str_replace('-', ' ', $key);
@@ -347,7 +347,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 							if (is_array($value)) {
 								$value = implode(', ', $value);
 							}
-				
+
 							echo '<tr class="form-field">' .
 									'<th scope="row">' .
 										'<label for="hcf_author">' . esc_html( sprintf( '%s', ucwords($rmv_cfgeo) ), 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
@@ -357,7 +357,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 								'</tr>';
 						}
 					}
-				
+
 					if (get_post_meta( $post->ID, 'cfgeo-debug-ipstack', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
@@ -367,7 +367,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 								'</td>' .
 							'</tr>';
 					}
-				
+
 					if (get_post_meta( $post->ID, 'cfgeo-debug-ipapi', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
@@ -377,7 +377,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 								'</td>' .
 							'</tr>';
 					}
-				
+
 					if (get_post_meta( $post->ID, 'cfgeo-debug-keycdn', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
@@ -388,7 +388,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 							'</tr>';
 					}
 				}
-				
+
 
 			echo '</table>';
 			echo '<!-- Entry Location metabox -->';

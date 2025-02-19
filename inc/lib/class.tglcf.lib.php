@@ -67,12 +67,11 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			if ( get_option( 'cfgeo_debug_mode' ) === false ){ // Nothing yet saved
 				update_option( 'cfgeo_debug_mode', 1 );
 			}
-			if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
-			{
+
+			if( isset($_GET["tab"]) ){
 				//Add a new section to a settings page.
 				add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
-				if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
-				{
+				if($_GET["tab"] == "cfgeo-setting" ){
 					//Add a new section to a settings page.
 					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
 					//Add a new field to a section of a settings page.
@@ -198,6 +197,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 				add_post_meta( $ini_post_id, '_form_id', $form_id);
 				add_post_meta( $ini_post_id, '_form_data', $form_value );
 			}
+			add_filter( 'wpcf7_skip_mail', array( $this, 'cfgeo_filter__wpcf7_skip_mail' ), 20 );
 			$this->mail( $form_instance, $data ,$form_data);
 		}
 
@@ -306,21 +306,37 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 											$new_data[] = ($geolocation_data['cfgeo-city']) ? 'City: '. $geolocation_data['cfgeo-city'] : 'City: ';
 										}
 
-										if($total_att > 1 && $att == 'lat-long' && $geolocation_data != ''){
-											$new_data[] = ($geolocation_data['cfgeo-lat-long'])? 'Latitude/Longitude: ' . $geolocation_data['cfgeo-lat-long'] : 'Latitude/Longitude: ';
-										}
+										if ( $total_att > 1 && strpos( $att, 'lat-long' ) !== false && $geolocation_data != '' ) {
+		                                    if ( strpos( $single, 'label="no"' ) !== false ) {
+		                                        $new_data[] = $geolocation_data['cfgeo-lat-long'] ? $geolocation_data['cfgeo-lat-long'] : 'Latitude/Longitude: ';
+		                                    } else {
+		                                        $new_data[] = $geolocation_data['cfgeo-lat-long'] ? 'City: ' . $geolocation_data['cfgeo-lat-long'] : 'Latitude/Longitude: ';
+		                                    }
+		                                }
 
-										if($total_att > 1 && $att == 'city' && $geolocation_data != ''){
-											$new_data[] = ($geolocation_data['cfgeo-city']) ? 'City: '. $geolocation_data['cfgeo-city'] : 'City: ';
-										}
+										if ( $total_att > 1 && strpos( $att, 'city' ) !== false && $geolocation_data != '' ) {
+		                                    if ( strpos( $single, 'label="no"' ) !== false ) {
+		                                        $new_data[] = $geolocation_data['cfgeo-city'] ? $geolocation_data['cfgeo-city'] : 'City: ';
+		                                    } else {
+		                                        $new_data[] = $geolocation_data['cfgeo-city'] ? 'City: ' . $geolocation_data['cfgeo-city'] : 'City: ';
+		                                    }
+		                                }
 
-										if($total_att > 1 && $att == 'state' && $geolocation_data != ''){
-											$new_data[] = ($geolocation_data['cfgeo-state']) ? 'State: '.$geolocation_data['cfgeo-state'] : 'State: ';
-										}
+										if ( $total_att > 1 && strpos( $att, 'state' ) !== false && $geolocation_data != '' ) {
+		                                    if ( strpos( $single, 'label="no"' ) !== false ) {
+		                                        $new_data[] = $geolocation_data['cfgeo-state'] ? $geolocation_data['cfgeo-state'] : 'State: ';
+		                                    } else {
+		                                        $new_data[] = $geolocation_data['cfgeo-state'] ? 'State: ' . $geolocation_data['cfgeo-state'] : 'State: ';
+		                                    }
+		                                }
 
-										if($total_att > 1 && $att == 'country' && $geolocation_data != ''){
-											$new_data[] = ($geolocation_data['cfgeo-country']) ? 'Country: ' .$geolocation_data['cfgeo-country'] : 'Country: ';
-										}
+										if ( $total_att > 1 && strpos( $att, 'country' ) !== false && $geolocation_data != '' ) {
+		                                    if ( strpos( $single, 'label="no"' ) !== false ) {
+		                                        $new_data[] = $geolocation_data['cfgeo-country'] ? $geolocation_data['cfgeo-country'] : 'Country: ';
+		                                    } else {
+		                                        $new_data[] = $geolocation_data['cfgeo-country'] ? 'Country: ' . $geolocation_data['cfgeo-country'] : 'Country: ';
+		                                    }
+		                                }
 
 										if($total_att > 1 && $att == 'gmap' && $use_html == 1 && $geolocation_data != ''){
 											$lat_long_sep = explode(",",$geolocation_data['cfgeo-lat-long']);
@@ -756,33 +772,33 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			if ( empty( $attachment ) ) {
 				return;
 			}
-		
+
 			// Initialize WP_Filesystem
 			if ( ! function_exists( 'WP_Filesystem' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/file.php';
 			}
 			WP_Filesystem();
-		
+
 			global $wp_filesystem;
-		
+
 			if ( ! $wp_filesystem || ! is_object( $wp_filesystem ) ) {
 				// Filesystem initialization failed, handle error
 				return;
 			}
-		
+
 			$new_attachment_file = array();
-		
+
 			foreach ( $attachment as $key => $value ) {
 				$tmp_name = $value;
 				$uploads_dir = wpcf7_maybe_add_random_dir( $this->cfgeo_upload_tmp_dir() );
-				
+
 				foreach ( $tmp_name as $newkey => $file_path ) {
 					$get_file_name = explode( '/', $file_path );
 					$new_uploaded_file = path_join( $uploads_dir, end( $get_file_name ) );
-		
+
 					if ( $wp_filesystem->copy( $file_path, $new_uploaded_file, true ) ) {
 						$wp_filesystem->chmod( $new_uploaded_file, 0755 );
-		
+
 						if ( $version == 'old' ) {
 							$new_attachment_file[ $newkey ] = $new_uploaded_file;
 						} else {
@@ -791,46 +807,52 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					}
 				}
 			}
-		
+
 			return $new_attachment_file;
 		}
-		
+
 
 		/**
 		 * [cfgeo_custom_logs Custom Log.]
 		 * @param  [string] $message [Error Log Message]
 		 * @return [string]          [description]
 		 */
-		function cfgeo_custom_logs($message) {
-			//log format: postid - error message - API name
-			if(is_array($message)) {
-				$message = wp_json_encode($message);
-			}
-			if ( ! function_exists( 'WP_Filesystem' ) ) {
-				require_once ABSPATH . 'wp-admin/includes/file.php';
-			}
-			WP_Filesystem();
-		
-			global $wp_filesystem;
-		
-			if ( ! $wp_filesystem || ! is_object( $wp_filesystem ) ) {
-				// Filesystem initialization failed, handle error
-				return;
-			}
-		
-			// Path to the log file
-			$log_file = trailingslashit( WP_CONTENT_DIR ) . 'cf7-geo.log';
-		
-			// Append to the log file
-			$current_time = gmdate('Y-m-d h:i:s');
-			$log_content = "\n" . $current_time . " :: " . $message;
-		
-			if ( ! $wp_filesystem->exists( $log_file ) ) {
-				$wp_filesystem->put_contents( $log_file, '', FS_CHMOD_FILE );
-			}
-		
-			$wp_filesystem->append_to_file( $log_file, $log_content );
-		}
+	 function cfgeo_custom_logs($message) {
+	     // Log format: postid - error message - API name
+	     if (is_array($message)) {
+	         $message = wp_json_encode($message);
+	     }
+	     if (!function_exists('WP_Filesystem')) {
+	         require_once ABSPATH . 'wp-admin/includes/file.php';
+	     }
+	     WP_Filesystem();
+
+	     global $wp_filesystem;
+
+	     if (!$wp_filesystem || !is_object($wp_filesystem)) {
+	         // Filesystem initialization failed, handle error
+	         return;
+	     }
+
+	     // Path to the log file
+	     $log_file = trailingslashit(WP_CONTENT_DIR) . 'cf7-geo.log';
+
+	     // Append to the log file
+	     $current_time = gmdate('Y-m-d H:i:s');
+	     $log_content = "\n" . $current_time . " :: " . $message;
+
+	     // Check if the log file exists and read its content
+	     $existing_content = '';
+	     if ($wp_filesystem->exists($log_file)) {
+	         $existing_content = $wp_filesystem->get_contents($log_file);
+	     }
+
+	     // Append the new log content
+	     $new_content = $existing_content . $log_content;
+
+	     // Write the updated content to the log file
+	     $wp_filesystem->put_contents($log_file, $new_content, FS_CHMOD_FILE);
+	 }
 
 		/**
 		 * Get current conatct from 7 version.

@@ -116,19 +116,39 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 				</tr>
 				<tr>
 					<td>'. esc_html('To add just latitude/longitude.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation lat-long]" style="width: 100%;color: #000;" disabled=""></td>
+					<td>
+						<input type="text" value="[geolocation lat-long]" style="width: 100%;color: #000;" disabled="">
+					</td>
+				</tr>
+				<tr>
+					<td>'. esc_html('To add just latitude/longitude without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>
+						<input type="text" value="[geolocation lat-long label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled="">
+					</td>
 				</tr>
 				<tr>
 					<td>'. esc_html('To add just country.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation country]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
+					<td>'. esc_html('To add just Country without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation country label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled=""></td>
+				</tr>
+				<tr>
 					<td>'. esc_html('To add just state.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation state]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
+					<td>'. esc_html('To add just State without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation state label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled=""></td>
+				</tr>
+				<tr>
 					<td>'. esc_html('To add just city.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation city]" style="width: 100%;color: #000;" disabled=""></td>
+				</tr>
+				<tr>
+					<td>'. esc_html('To add just City without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation city label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html('To add just Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
