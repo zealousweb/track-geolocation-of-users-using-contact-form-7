@@ -4,11 +4,11 @@ Contributors: zealopensource
 Donate Link: http://www.zealousweb.com/payment/
 Tags: geolocation,track geolocation,Google Maps
 Requires at least: 4.9 or higher
-Tested up to: 6.7
-Stable tag: 2.7
+Tested up to: 6.8
+Stable tag: 2.8
 Requires PHP: 7.0
 License: GPL-3.0-or-later
-Version: 2.7
+Version: 2.8
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Track Geolocation Of Users Using Contact Form 7 allows you to get geolocation information with their form submission.
@@ -31,9 +31,26 @@ Track Geolocation Of Users Using Contact Form 7 allows you to get geolocation in
 * To add only the city in the mail - [geolocation city]
 * To add only Google map static image in the mail- [geolocation gmap]
 
+<strong>[Demo for Track Geolocation Of Users Using Contact Form 7](https://demo.zealousweb.com/wordpress-plugins/track-geolocation-of-users-using-contact-form-7/)</strong>
+
 Note: To add Google map static image in the mail you have to enable this 2 option
-1) You have to enable Use HTML content-type in the Mail setting of Contact form 7.
-2) You have to enable Maps Static API in Google Map API.
+1. You have to enable Use HTML content-type in the Mail setting of Contact form 7.
+2. You have to enable Maps Static API in Google Map API.
+
+== OUR OTHER PLUGINS ==
+
+* <strong>[Abandoned Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/abandoned-contact-form-7-pro)</strong>
+* <strong>[Accept 2 Checkout Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-2checkout-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Authorize.NET Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-authorize-net-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Elavon Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-elavon-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept PayPal Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-paypal-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Sagepay(Opayo) Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-sage-pay-opayo-payments-using-contact-form-7-pro)</strong>
+* <strong>[Accept Stripe Payments Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/accept-stripe-payments-using-contact-form-7-pro)</strong>
+* <strong>[Custom Product Options WooCommerce Pro](https://store.zealousweb.com/wordpress-plugins/custom-product-options-woocommerce-pro)</strong>
+* <strong>[Generate PDF Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/generate-pdf-using-contact-form-7-pro)</strong>
+* <strong>[Smart Appointment & Booking Pro](https://store.zealousweb.com/wordpress-plugins/smart-appointment-booking-pro)</strong>
+* <strong>[Smart Showcase for Google Reviews Pro](https://store.zealousweb.com/wordpress-plugins/smart-showcase-for-google-reviews-pro)</strong>
+* <strong>[User Registration Using Contact Form 7 Pro](https://store.zealousweb.com/wordpress-plugins/user-registration-using-contact-form-7-pro)</strong>
 
 == Installation ==
 
@@ -61,6 +78,9 @@ Our professional impassioned Wordpress experts provide profound and customer-ori
 Thank you for choosing a Plugin developed by <strong>[ZealousWeb](https://www.zealousweb.com)</strong>!
 
 == Changelog ==
+
+= 2.8 =
+* Minor changes – Doc update.
 
 = 2.7 =
 * Minor changes – Doc update.
