@@ -72,7 +72,11 @@ if ( !class_exists( 'CFGEO_Admin_Filter' ) ) {
 		 * @return array
 		 */
 		function filter__cfgeo_manage_cfgeozw_data_sortable_columns( $columns ) {
-			$columns['country'] = '_country';
+			$columns['country'] = 'cfgeo-country';
+			$columns['state'] = 'cfgeo-state';
+			$columns['city'] = 'cfgeo-city';
+			$columns['lat_long'] = 'cfgeo-lat-long';
+			$columns['api_key_used'] = 'cfgeo-api-used';
 			return $columns;
 		}
 
@@ -91,6 +95,7 @@ if ( !class_exists( 'CFGEO_Admin_Filter' ) ) {
 			unset( $columns['date'] );
 			$columns['country']         = __( 'Country', 'track-geolocation-of-users-using-contact-form-7' );
 			$columns['state']           = __( 'State', 'track-geolocation-of-users-using-contact-form-7' );
+			$columns['city']            = __( 'City', 'track-geolocation-of-users-using-contact-form-7' );
 			$columns['lat_long']         = __( 'Lat./Long.', 'track-geolocation-of-users-using-contact-form-7' );
 			$columns['api_key_used']    = __( 'API', 'track-geolocation-of-users-using-contact-form-7' );
 			$columns['date']            = __( 'Submitted Date', 'track-geolocation-of-users-using-contact-form-7' );
