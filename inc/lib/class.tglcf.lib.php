@@ -19,7 +19,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		private $lib_version = '1.0.0'; // lib github commit
 		var $context = '';
 
-		static  $activation_menuname    = 'Geolocation Settings',
+		static  $activation_menuname    = '',//'Geolocation Settings',
 				$setting_page           = 'geolocation-setting',
 				$google_api_link        = 'https://developers.google.com/maps/documentation/geolocation/get-api-key';
 
@@ -29,6 +29,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			add_action( 'admin_menu',               array( $this, 'zw_settings_menu' ) );
 			add_action( 'wpcf7_before_send_mail',   array( $this, 'cfgeo_before_send_mail' ), 20, 3 );
 
+			self::$activation_menuname = __( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' );
 		}
 
 		/*
@@ -75,10 +76,41 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					//Add a new section to a settings page.
 					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
 					//Add a new field to a section of a settings page.
-					add_settings_field("cfgeo_debug_mode",     __("<label>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$setting_page, "cfgeo_googleapi");
-					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
-					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
-					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
+					add_settings_field(
+						"cfgeo_debug_mode",
+						'<label>' . esc_html__('Enable Debug Mode', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-debug"></span>',
+						array($this, 'cfgeo_display_debug_data'),
+						self::$setting_page,
+						"cfgeo_googleapi"
+					);
+
+					add_settings_field(
+						"cfgeo_color_picker",
+						'<label>' . esc_html__('Select Color of the Graph', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-color-graph"></span>',
+						array($this, 'cfgeo_display_setting_field_data'),
+						self::$setting_page,
+						"cfgeo_googleapi",
+						array('cfgeo_color_picker')
+					);
+
+					add_settings_field(
+						"cfgeo_google_api_key",
+						'<label>' . esc_html__('Google Map API Key', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-google"></span>',
+						array($this, 'cfgeo_display_setting_field_data'),
+						self::$setting_page,
+						"cfgeo_googleapi",
+						array('cfgeo_google_api_key')
+					);
+
+					add_settings_field(
+						"cfgeo_ipstack_access",
+						'<label>' . esc_html__('Access Token For IPstack', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-ipstack"></span>',
+						array($this, 'cfgeo_display_setting_field_data'),
+						self::$setting_page,
+						"cfgeo_googleapi",
+						array('cfgeo_ipstack_access')
+					);
+
 
 					//Registers a setting and its data.
 					register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
@@ -89,10 +121,40 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					//Add a new section to a settings page.
 					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
 					//Add a new field to a section of a settings page.
-					add_settings_field("cfgeo_debug_mode",     __("<label>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$setting_page, "cfgeo_googleapi");
-					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
-					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
-					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
+					add_settings_field(
+						"cfgeo_debug_mode",
+						'<label>' . esc_html__('Enable Debug Mode', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-debug"></span>',
+						array($this, 'cfgeo_display_debug_data'),
+						self::$setting_page,
+						"cfgeo_googleapi"
+					);
+
+					add_settings_field(
+						"cfgeo_color_picker",
+						'<label>' . esc_html__('Select Color of the Graph', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-color-graph"></span>',
+						array($this, 'cfgeo_display_setting_field_data'),
+						self::$setting_page,
+						"cfgeo_googleapi",
+						array('cfgeo_color_picker')
+					);
+
+					add_settings_field(
+						"cfgeo_google_api_key",
+						'<label>' . esc_html__('Google Map API Key', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-google"></span>',
+						array($this, 'cfgeo_display_setting_field_data'),
+						self::$setting_page,
+						"cfgeo_googleapi",
+						array('cfgeo_google_api_key')
+					);
+
+					add_settings_field(
+						"cfgeo_ipstack_access",
+						'<label>' . esc_html__('Access Token For IPstack', 'track-geolocation-of-users-using-contact-form-7') . '</label><span class="cfgeo-tooltip hide-if-no-js" id="cfgeo-ipstack"></span>',
+						array($this, 'cfgeo_display_setting_field_data'),
+						self::$setting_page,
+						"cfgeo_googleapi",
+						array('cfgeo_ipstack_access')
+					);
 
 					//Registers a setting and its data.
 					register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
@@ -426,10 +488,20 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		function cfgeo_display_header_content(){
 			if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 				if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
-					echo '<br>You can get your Google Map API key from <a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
+					echo '<br>' . sprintf(
+					/* translators: %s: link to Google API console */
+					esc_html__( 'You can get your Google Map API key from %s.', 'track-geolocation-of-users-using-contact-form-7' ),
+					'<a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>'
+				);
+
 				}
-			}else{
-				echo '<br>You can get your Google Map API key from <a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'text-domain' ) . '</a>';
+			} else {
+				echo '<br>' . sprintf(
+					/* translators: %s is a link to Google API Console */
+					esc_html__( 'You can get your Google Map API key from %s.', 'track-geolocation-of-users-using-contact-form-7' ),
+					'<a href="' . esc_url( self::$google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>'
+				);
+
 			}
 		}
 
