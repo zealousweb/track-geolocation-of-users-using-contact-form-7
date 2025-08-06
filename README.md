@@ -16,12 +16,15 @@ The plugin now includes comprehensive filtering and search functionality in the 
 - **Search Functionality**: Search across all fields including country, city, state, and coordinates
 
 #### Enhanced Features
+- **AJAX Real-time Filtering**: All filters work instantly without page reloads
 - **Sortable Columns**: All geolocation columns (Country, State, City, Lat/Long, API) are now sortable
 - **Smart CSV Export**: Export functionality respects all active filters
-- **Real-time Filtering**: Dropdown filters auto-submit for immediate results
+- **Debounced Search**: Search input with intelligent delay for better performance
 - **Date Validation**: Prevents invalid date ranges
 - **Filter Count Display**: Shows number of submissions matching current filters
 - **Clear Filters**: One-click option to reset all filters
+- **Loading States**: Visual feedback during AJAX operations
+- **URL State Management**: Filter state preserved in browser URL
 
 #### User Experience Improvements
 - **Modern UI**: Clean, professional styling with WordPress admin theme integration
@@ -74,6 +77,13 @@ Click on any column header to sort by that field. Sortable columns include:
 For support and documentation, visit the plugin's documentation page or contact support.
 
 ## Changelog
+
+### Version 2.9+
+- **AJAX-Based Filtering**: Implemented real-time AJAX filtering and search functionality
+- **External Assets**: Moved all inline CSS and JavaScript to existing admin.css and admin.js files
+- **Proper Enqueuing**: Fixed asset loading using admin_enqueue_scripts hook for proper screen detection
+- **Localized Scripts**: Added proper localization for AJAX nonces and error messages
+- **Enhanced UX**: Added loading states, debounced search, and real-time pagination
 
 ### Version 2.8+
 - Added advanced filtering and search functionality
