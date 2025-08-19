@@ -6,6 +6,8 @@
 		console.log('CFGEO Debug: cfgeo_ajax available:', typeof cfgeo_ajax !== 'undefined');
 		if (typeof cfgeo_ajax !== 'undefined') {
 			console.log('CFGEO Debug: cfgeo_ajax data:', cfgeo_ajax);
+		} else {
+			console.log('CFGEO Debug: cfgeo_ajax not available, some features may be limited');
 		}
 		
 		// Debug: Check if we're on the CFGEO page
@@ -36,8 +38,8 @@
 	}
 
 		jQuery('.setting-geolocation input#submit').click( function() {
-			// Only validate color picker if spectrum is available
-			if (jQuery.fn.spectrum) {
+			// Only validate color picker if spectrum is available and color picker exists on current tab
+			if (jQuery.fn.spectrum && jQuery(".cfgeo_color_picker").length > 0) {
 				var color_val = jQuery(".cfgeo_color_picker").val();
 				if(jQuery( ".cfgeo_color_picker" ).hasClass( "validation-error-geo" ) || color_val == null || color_val == ''){
 					jQuery(".cfgeo_color_picker").addClass('validation-error-geo');
@@ -89,6 +91,52 @@
 			jQuery( '#cfgeo-color-graph' ).pointer({
 				pointerClass: 'wp-pointer cfgeo-pointer',
 				content: translate_string_geo.graphcolor,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+		// Webhook tooltips
+		jQuery( '#cfgeo-webhook-enabled' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-enabled' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_enabled,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+		jQuery( '#cfgeo-webhook-urls' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-urls' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_urls,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+		jQuery( '#cfgeo-webhook-secret' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-secret' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_secret,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+		jQuery( '#cfgeo-webhook-timeout' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-timeout' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_timeout,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+		jQuery( '#cfgeo-webhook-retry' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-retry' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_retry,
 				position: 'left center',
 			} ).pointer('open');
 		});
@@ -279,6 +327,92 @@
 			}
 		} else {
 			console.log('CFGEO Debug: Not on CFGEO page or cfgeo_ajax not available, skipping AJAX initialization');
+		}
+
+		// Webhook API functionality
+		if ($('#test-webhook').length && typeof cfgeo_ajax !== 'undefined') {
+			$('#test-webhook').on('click', function() {
+				var button = $(this);
+				var originalText = button.text();
+				
+				button.prop('disabled', true).text('Testing...');
+				$('#webhook-test-result').hide();
+				
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'cfgeo_test_webhook',
+						nonce: cfgeo_ajax.webhook_test_nonce || cfgeo_ajax.nonce
+					},
+					success: function(response) {
+						if (response && response.success) {
+							var message = response.data && response.data.message ? response.data.message : 'Test completed successfully!';
+							$('#webhook-test-result').html(
+								'<div class="notice notice-success"><p>' + message + '</p></div>'
+							).show();
+						} else {
+							var message = response && response.data && response.data.message ? response.data.message : 'Test failed. Please try again.';
+							$('#webhook-test-result').html(
+								'<div class="notice notice-error"><p>' + message + '</p></div>'
+							).show();
+						}
+					},
+					error: function() {
+						$('#webhook-test-result').html(
+							'<div class="notice notice-error"><p>An error occurred while testing the webhook.</p></div>'
+						).show();
+					},
+					complete: function() {
+						button.prop('disabled', false).text(originalText);
+					}
+				});
+			});
+		}
+
+		// Load webhook logs
+		if ($('#webhook-logs').length && typeof cfgeo_ajax !== 'undefined') {
+			loadWebhookLogs();
+		}
+
+		function loadWebhookLogs() {
+			if (typeof cfgeo_ajax === 'undefined') {
+				$('#webhook-logs').html('<p class="description">Unable to load webhook logs - AJAX not available.</p>');
+				return;
+			}
+			
+			$.ajax({
+				url: ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'cfgeo_get_webhook_logs',
+					nonce: cfgeo_ajax.webhook_logs_nonce || cfgeo_ajax.nonce
+				},
+				success: function(response) {
+					if (response && response.success && response.data && response.data.logs) {
+						var logsHtml = '';
+						if (response.data.logs.length > 0) {
+							response.data.logs.forEach(function(log) {
+								var statusClass = log.success ? 'success' : 'error';
+								var statusText = log.success ? 'Success' : 'Failed';
+								logsHtml += '<div class="webhook-log-entry ' + statusClass + '">';
+								logsHtml += '<strong>' + statusText + '</strong> - ' + (log.timestamp || 'Unknown time') + '<br>';
+								logsHtml += '<small>URL: ' + (log.url || 'Unknown URL') + '</small><br>';
+								logsHtml += '<small>Response: ' + (log.response_code || 'Unknown') + ' - ' + (log.response_message || 'No message') + '</small>';
+								logsHtml += '</div>';
+							});
+						} else {
+							logsHtml = '<p class="description">No webhook logs available yet.</p>';
+						}
+						$('#webhook-logs').html(logsHtml);
+					} else {
+						$('#webhook-logs').html('<p class="description">Unable to load webhook logs - invalid response format.</p>');
+					}
+				},
+				error: function() {
+					$('#webhook-logs').html('<p class="description">Unable to load webhook logs.</p>');
+				}
+			});
 		}
 	});
 

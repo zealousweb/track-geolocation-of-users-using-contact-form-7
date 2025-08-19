@@ -28,6 +28,12 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			add_action( 'admin_init',               array( $this, 'cfgeo_display_options'));
 			add_action( 'admin_menu',               array( $this, 'zw_settings_menu' ) );
 			add_action( 'wpcf7_before_send_mail',   array( $this, 'cfgeo_before_send_mail' ), 20, 3 );
+			
+			// Add webhook retry cron hook
+			add_action( 'cfgeo_webhook_retry', array( $this, 'cfgeo_handle_webhook_retry' ) );
+			
+			// Add webhook send cron hook
+			add_action( 'cfgeo_send_webhook', array( $this, 'cfgeo_send_webhook_data' ) );
 
 		}
 
@@ -68,6 +74,20 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 				update_option( 'cfgeo_debug_mode', 1 );
 			}
 
+			// Register all settings first (required by WordPress)
+			//Registers main settings
+			register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
+			register_setting("cfgeo_googleapi", "cfgeo_color_picker");
+			register_setting("cfgeo_googleapi", "cfgeo_google_api_key");
+			register_setting("cfgeo_googleapi", "cfgeo_ipstack_access");
+			
+			//Registers webhook settings
+			register_setting("cfgeo_webhook_api", "cfgeo_webhook_enabled");
+			register_setting("cfgeo_webhook_api", "cfgeo_webhook_urls");
+			register_setting("cfgeo_webhook_api", "cfgeo_webhook_secret");
+			register_setting("cfgeo_webhook_api", "cfgeo_webhook_timeout");
+			register_setting("cfgeo_webhook_api", "cfgeo_webhook_retry");
+
 			if( isset($_GET["tab"]) ){
 				//Add a new section to a settings page.
 				add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$setting_page);
@@ -79,11 +99,15 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
 					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
 					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
-
-					//Registers a setting and its data.
-					register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
-					register_setting("cfgeo_googleapi", "cfgeo_google_api_key");
-					register_setting("cfgeo_googleapi", "cfgeo_ipstack_access");
+				}elseif($_GET["tab"] == "cfgeo-webhook-api" ){
+					//Add a new section to a settings page for webhook API.
+					add_settings_section("cfgeo_webhook_api", "", array( $this, 'cfgeo_display_webhook_header_content'), self::$setting_page);
+					//Add webhook settings fields
+					add_settings_field("cfgeo_webhook_enabled", __("<label>Enable Webhook API </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-enabled></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_enabled_data'), self::$setting_page, "cfgeo_webhook_api");
+					add_settings_field("cfgeo_webhook_urls", __("<label>Webhook URLs </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-urls></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_urls_data'), self::$setting_page, "cfgeo_webhook_api");
+					add_settings_field("cfgeo_webhook_secret", __("<label>Webhook Secret Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-secret></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_webhook_api", array('cfgeo_webhook_secret'));
+					add_settings_field("cfgeo_webhook_timeout", __("<label>Request Timeout (seconds) </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-timeout></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_webhook_api", array('cfgeo_webhook_timeout'));
+					add_settings_field("cfgeo_webhook_retry", __("<label>Retry Failed Webhooks </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-retry></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_retry_data'), self::$setting_page, "cfgeo_webhook_api");
 				}
 			}else{
 					//Add a new section to a settings page.
@@ -93,12 +117,6 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
 					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
 					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
-
-					//Registers a setting and its data.
-					register_setting("cfgeo_googleapi", "cfgeo_debug_mode");
-					register_setting("cfgeo_googleapi", "cfgeo_color_picker");
-					register_setting("cfgeo_googleapi", "cfgeo_google_api_key");
-					register_setting("cfgeo_googleapi", "cfgeo_ipstack_access");
 			}
 		}
 
@@ -192,6 +210,40 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					add_post_meta( $ini_post_id, 'cfgeo-state', $form_data['cfgeo-state'], $unique = false );
 					add_post_meta( $ini_post_id, 'cfgeo-city', $form_data['cfgeo-city'], $unique = false );
 					add_post_meta( $ini_post_id, 'cfgeo-lat-long', $lat_long, $unique = false );
+					
+					// Prepare geolocation data for webhook
+					$geo_data = array(
+						'country' => $form_data['cfgeo-country'],
+						'state' => $form_data['cfgeo-state'],
+						'city' => $form_data['cfgeo-city'],
+						'latitude' => $get_loc['latitude'],
+						'longitude' => $get_loc['longitude'],
+						'lat_long' => $lat_long,
+						'ip_address' => $ip
+					);
+					
+									// Send webhook data asynchronously
+				if (get_option('cfgeo_debug_mode')) {
+					error_log('CFGEO Webhook: Scheduling webhook event with data: ' . print_r($data, true));
+					error_log('CFGEO Webhook: Scheduling webhook event with geo_data: ' . print_r($geo_data, true));
+				}
+				
+				// Try to schedule the webhook event
+				$scheduled = wp_schedule_single_event(time(), 'cfgeo_send_webhook', array($data, $geo_data));
+				
+				// If scheduling fails, send immediately
+				if ($scheduled === false) {
+					if (get_option('cfgeo_debug_mode')) {
+						error_log('CFGEO Webhook: Cron scheduling failed, sending webhook immediately');
+					}
+					$this->cfgeo_send_webhook_data($data, $geo_data);
+				} else {
+					// Manually trigger cron processing to ensure webhook is sent
+					if (get_option('cfgeo_debug_mode')) {
+						error_log('CFGEO Webhook: Manually triggering cron processing');
+					}
+					spawn_cron();
+				}
 				}
 				$form_value   = serialize( $form_data );
 				add_post_meta( $ini_post_id, '_form_id', $form_id);
@@ -871,6 +923,248 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			$plugin_data = get_plugin_data( $wpcf7_path );
 
 			return $plugin_data['Version'];
+		}
+
+		/**
+		 * [cfgeo_display_webhook_header_content Add Webhook Header content in setting page.]
+		 * @return [html] [message]
+		 */
+		function cfgeo_display_webhook_header_content(){
+			echo '<br>' . esc_html__( 'Configure webhooks to send geolocation data to external platforms when form submissions occur.', 'track-geolocation-of-users-using-contact-form-7' );
+		}
+
+		/**
+		 * [cfgeo_display_webhook_enabled_data Display Webhook Enabled Checkbox in setting page.]
+		 * @return [html] [field generate]
+		 */
+		function cfgeo_display_webhook_enabled_data()
+		{
+			?>
+			<input type="checkbox" name="cfgeo_webhook_enabled" id="cfgeo_webhook_enabled" value="1" <?php checked( 1, get_option('cfgeo_webhook_enabled'), true ); ?> />
+			<?php
+		}
+
+		/**
+		 * [cfgeo_display_webhook_urls_data Display Webhook URLs Textarea in setting page.]
+		 * @return [html] [field generate]
+		 */
+		function cfgeo_display_webhook_urls_data()
+		{
+			$option = get_option('cfgeo_webhook_urls');
+			?>
+			<textarea name="cfgeo_webhook_urls" id="cfgeo_webhook_urls" rows="5" cols="50" placeholder="<?php esc_attr_e('https://your-webhook-url.com/webhook', 'track-geolocation-of-users-using-contact-form-7'); ?>"><?php echo esc_textarea($option); ?></textarea>
+			<p class="description"><?php esc_html_e('Enter one webhook URL per line. Multiple webhooks are supported.', 'track-geolocation-of-users-using-contact-form-7'); ?></p>
+			<?php
+		}
+
+		/**
+		 * [cfgeo_display_webhook_retry_data Display Webhook Retry Checkbox in setting page.]
+		 * @return [html] [field generate]
+		 */
+		function cfgeo_display_webhook_retry_data()
+		{
+			?>
+			<input type="checkbox" name="cfgeo_webhook_retry" id="cfgeo_webhook_retry" value="1" <?php checked( 1, get_option('cfgeo_webhook_retry'), true ); ?> />
+			<p class="description"><?php esc_html_e('If enabled, failed webhook deliveries will be retried up to 3 times.', 'track-geolocation-of-users-using-contact-form-7'); ?></p>
+			<?php
+		}
+
+		/**
+		 * [cfgeo_send_webhook_data Send webhook data to external platforms.]
+		 * @param  [array] $form_data [Form submission data]
+		 * @param  [array] $geo_data [Geolocation data]
+		 * @return [void]
+		 */
+		function cfgeo_send_webhook_data($form_data, $geo_data) {
+			// Debug logging
+			if (get_option('cfgeo_debug_mode')) {
+				error_log('CFGEO Webhook: Function called with form_data: ' . print_r($form_data, true));
+				error_log('CFGEO Webhook: Function called with geo_data: ' . print_r($geo_data, true));
+			}
+			
+			// Check if webhooks are enabled
+			if (!get_option('cfgeo_webhook_enabled')) {
+				if (get_option('cfgeo_debug_mode')) {
+					error_log('CFGEO Webhook: Webhooks are disabled');
+				}
+				return;
+			}
+
+			// Get webhook URLs
+			$webhook_urls = get_option('cfgeo_webhook_urls');
+			if (empty($webhook_urls)) {
+				if (get_option('cfgeo_debug_mode')) {
+					error_log('CFGEO Webhook: No webhook URLs configured');
+				}
+				return;
+			}
+
+			// Split URLs by line
+			$urls = array_filter(array_map('trim', explode("\n", $webhook_urls)));
+			if (empty($urls)) {
+				if (get_option('cfgeo_debug_mode')) {
+					error_log('CFGEO Webhook: No valid webhook URLs found after parsing');
+				}
+				return;
+			}
+			
+			if (get_option('cfgeo_debug_mode')) {
+				error_log('CFGEO Webhook: Found ' . count($urls) . ' webhook URLs to process');
+			}
+
+			// Prepare webhook payload
+			$payload = array(
+				'timestamp' => current_time('c'),
+				'site_url' => get_site_url(),
+				'form_data' => $form_data,
+				'geolocation' => $geo_data,
+				'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+				'ip_address' => $this->cfgeo_get_ip()
+			);
+
+			// Add webhook secret if configured
+			$webhook_secret = get_option('cfgeo_webhook_secret');
+			if (!empty($webhook_secret)) {
+				$payload['signature'] = hash_hmac('sha256', wp_json_encode($payload), $webhook_secret);
+			}
+
+			// Get timeout setting
+			$timeout = get_option('cfgeo_webhook_timeout', 30);
+			$timeout = intval($timeout);
+			if ($timeout < 5) $timeout = 5;
+			if ($timeout > 60) $timeout = 60;
+
+			// Send to each webhook URL
+			foreach ($urls as $url) {
+				if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+					continue;
+				}
+
+				$this->cfgeo_send_single_webhook($url, $payload, $timeout);
+			}
+		}
+
+		/**
+		 * [cfgeo_send_single_webhook Send webhook to a single URL.]
+		 * @param  [string] $url [Webhook URL]
+		 * @param  [array] $payload [Webhook payload]
+		 * @param  [int] $timeout [Request timeout]
+		 * @return [void]
+		 */
+		function cfgeo_send_single_webhook($url, $payload, $timeout) {
+			if (get_option('cfgeo_debug_mode')) {
+				error_log('CFGEO Webhook: Sending to URL: ' . $url);
+				error_log('CFGEO Webhook: Payload: ' . wp_json_encode($payload));
+			}
+			
+			$args = array(
+				'body' => wp_json_encode($payload),
+				'timeout' => $timeout,
+				'headers' => array(
+					'Content-Type' => 'application/json',
+					'User-Agent' => 'CF7-Geolocation-Webhook/1.0'
+				)
+			);
+
+			$response = wp_remote_post($url, $args);
+			$success = !is_wp_error($response) && wp_remote_retrieve_response_code($response) >= 200 && wp_remote_retrieve_response_code($response) < 300;
+
+			if (get_option('cfgeo_debug_mode')) {
+				if (is_wp_error($response)) {
+					error_log('CFGEO Webhook: WP Error: ' . $response->get_error_message());
+				} else {
+					error_log('CFGEO Webhook: Response code: ' . wp_remote_retrieve_response_code($response));
+					error_log('CFGEO Webhook: Response body: ' . wp_remote_retrieve_body($response));
+				}
+				error_log('CFGEO Webhook: Success: ' . ($success ? 'true' : 'false'));
+			}
+
+			// Log webhook attempt
+			$this->cfgeo_log_webhook_attempt($url, $success, $response);
+
+			// Retry on failure if enabled
+			if (!$success && get_option('cfgeo_webhook_retry')) {
+				$this->cfgeo_schedule_webhook_retry($url, $payload, $timeout);
+			}
+		}
+
+		/**
+		 * [cfgeo_log_webhook_attempt Log webhook delivery attempt.]
+		 * @param  [string] $url [Webhook URL]
+		 * @param  [bool] $success [Success status]
+		 * @param  [array] $response [Response data]
+		 * @return [void]
+		 */
+		function cfgeo_log_webhook_attempt($url, $success, $response) {
+			$log_data = array(
+				'url' => $url,
+				'success' => $success,
+				'timestamp' => current_time('c'),
+				'response_code' => is_wp_error($response) ? 'ERROR' : wp_remote_retrieve_response_code($response),
+				'response_message' => is_wp_error($response) ? $response->get_error_message() : wp_remote_retrieve_response_message($response)
+			);
+
+			// Store in WordPress options (keep last 50 attempts)
+			$logs = get_option('cfgeo_webhook_logs', array());
+			$logs[] = $log_data;
+			
+			// Keep only last 50 logs
+			if (count($logs) > 50) {
+				$logs = array_slice($logs, -50);
+			}
+			
+			update_option('cfgeo_webhook_logs', $logs);
+		}
+
+		/**
+		 * [cfgeo_schedule_webhook_retry Schedule webhook retry.]
+		 * @param  [string] $url [Webhook URL]
+		 * @param  [array] $payload [Webhook payload]
+		 * @param  [int] $timeout [Request timeout]
+		 * @return [void]
+		 */
+		function cfgeo_schedule_webhook_retry($url, $payload, $timeout) {
+			// Schedule retry using WordPress cron
+			$retry_data = array(
+				'url' => $url,
+				'payload' => $payload,
+				'timeout' => $timeout,
+				'retry_count' => 1
+			);
+
+			wp_schedule_single_event(time() + 300, 'cfgeo_webhook_retry', array($retry_data));
+		}
+
+		/**
+		 * [cfgeo_handle_webhook_retry Handle webhook retry.]
+		 * @param  [array] $retry_data [Retry data]
+		 * @return [void]
+		 */
+		function cfgeo_handle_webhook_retry($retry_data) {
+			$url = $retry_data['url'];
+			$payload = $retry_data['payload'];
+			$timeout = $retry_data['timeout'];
+			$retry_count = $retry_data['retry_count'];
+
+			$response = wp_remote_post($url, array(
+				'body' => wp_json_encode($payload),
+				'timeout' => $timeout,
+				'headers' => array(
+					'Content-Type' => 'application/json',
+					'User-Agent' => 'CF7-Geolocation-Webhook/1.0'
+				)
+			));
+
+			$success = !is_wp_error($response) && wp_remote_retrieve_response_code($response) >= 200 && wp_remote_retrieve_response_code($response) < 300;
+
+			// Log retry attempt
+			$this->cfgeo_log_webhook_attempt($url, $success, $response);
+
+			// Schedule another retry if still failed and under retry limit
+			if (!$success && $retry_count < 3) {
+				$retry_data['retry_count'] = $retry_count + 1;
+				wp_schedule_single_event(time() + (600 * $retry_count), 'cfgeo_webhook_retry', array($retry_data));
+			}
 		}
 
 	}

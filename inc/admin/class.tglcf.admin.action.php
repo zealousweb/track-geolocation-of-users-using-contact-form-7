@@ -33,6 +33,10 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			// Add AJAX handlers for real-time filtering
 			add_action( 'wp_ajax_cfgeo_filter_submissions',         array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
 			add_action( 'wp_ajax_nopriv_cfgeo_filter_submissions',  array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
+			
+			// Add AJAX handlers for webhook functionality
+			add_action( 'wp_ajax_cfgeo_test_webhook',               array( $this, 'action__cfgeo_ajax_test_webhook' ) );
+			add_action( 'wp_ajax_cfgeo_get_webhook_logs',           array( $this, 'action__cfgeo_ajax_get_webhook_logs' ) );
 		}
 
 		/*
@@ -68,7 +72,11 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		 */
 		function action__cfgeo_admin_enqueue_scripts( $hook ) {
 			$screen = get_current_screen();
-			if ( $screen && $screen->post_type === CFGEO_POST_TYPE ) {
+			
+			// Enqueue scripts for CFGEO post type pages or geolocation settings page
+			if ( ($screen && $screen->post_type === CFGEO_POST_TYPE) || 
+				 (isset($_GET['page']) && $_GET['page'] === 'geolocation-setting') ) {
+				
 				wp_enqueue_style( CFGEO_PREFIX . '_admin_css' );
 				wp_enqueue_style( CFGEO_PREFIX . '_spectrum_css' );
 				wp_enqueue_script( CFGEO_PREFIX . '_spectrum_js' );
@@ -78,7 +86,9 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				wp_localize_script( CFGEO_PREFIX . '_admin_js', 'cfgeo_ajax', array(
 					'nonce' => wp_create_nonce( 'cfgeo_filter_nonce' ),
 					'error_message' => __( 'An error occurred while filtering. Please try again.', 'track-geolocation-of-users-using-contact-form-7' ),
-					'date_error_message' => __( 'From date cannot be later than To date.', 'track-geolocation-of-users-using-contact-form-7' )
+					'date_error_message' => __( 'From date cannot be later than To date.', 'track-geolocation-of-users-using-contact-form-7' ),
+					'webhook_test_nonce' => wp_create_nonce( 'cfgeo_webhook_test_nonce' ),
+					'webhook_logs_nonce' => wp_create_nonce( 'cfgeo_webhook_logs_nonce' )
 				) );
 			}
 		}
@@ -981,6 +991,192 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				'html' => $html,
 				'pagination' => $pagination,
 				'total' => $total_posts
+			) );
+		}
+
+		/**
+		 * AJAX handler for testing webhook
+		 *
+		 * @method action__cfgeo_ajax_test_webhook
+		 */
+		function action__cfgeo_ajax_test_webhook() {
+			// Verify nonce - check both possible nonce names
+			$nonce_valid = false;
+			if (isset($_POST['nonce'])) {
+				$nonce_valid = wp_verify_nonce($_POST['nonce'], 'cfgeo_filter_nonce') || 
+							   wp_verify_nonce($_POST['nonce'], 'cfgeo_webhook_test_nonce');
+			}
+			
+			if (!$nonce_valid) {
+				wp_send_json_error(array(
+					'message' => __('Security check failed. Please refresh the page and try again.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check permissions
+			if ( !current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(array(
+					'message' => __('Insufficient permissions to perform this action.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check if webhooks are enabled
+			if (!get_option('cfgeo_webhook_enabled')) {
+				wp_send_json_error( array(
+					'message' => __( 'Webhooks are not enabled. Please enable webhooks first.', 'track-geolocation-of-users-using-contact-form-7' )
+				) );
+			}
+
+			// Get webhook URLs
+			$webhook_urls = get_option('cfgeo_webhook_urls');
+			if (empty($webhook_urls)) {
+				wp_send_json_error( array(
+					'message' => __( 'No webhook URLs configured. Please add webhook URLs first.', 'track-geolocation-of-users-using-contact-form-7' )
+				) );
+			}
+
+			// Prepare test payload
+			$test_payload = array(
+				'timestamp' => current_time('c'),
+				'site_url' => get_site_url(),
+				'form_data' => array(
+					'test_field' => 'Test Value',
+					'email' => 'test@example.com'
+				),
+				'geolocation' => array(
+					'country' => 'United States',
+					'state' => 'California',
+					'city' => 'San Francisco',
+					'latitude' => '37.7749',
+					'longitude' => '-122.4194',
+					'lat_long' => '37.7749,-122.4194',
+					'ip_address' => '127.0.0.1'
+				),
+				'user_agent' => 'Test Webhook',
+				'ip_address' => '127.0.0.1',
+				'test_mode' => true
+			);
+
+			// Add webhook secret if configured
+			$webhook_secret = get_option('cfgeo_webhook_secret');
+			if (!empty($webhook_secret)) {
+				$test_payload['signature'] = hash_hmac('sha256', wp_json_encode($test_payload), $webhook_secret);
+			}
+
+			// Get timeout setting
+			$timeout = get_option('cfgeo_webhook_timeout', 30);
+			$timeout = intval($timeout);
+			if ($timeout < 5) $timeout = 5;
+			if ($timeout > 60) $timeout = 60;
+
+			// Split URLs by line
+			$urls = array_filter(array_map('trim', explode("\n", $webhook_urls)));
+			$success_count = 0;
+			$total_count = count($urls);
+
+			foreach ($urls as $url) {
+				if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+					continue;
+				}
+
+				$args = array(
+					'body' => wp_json_encode($test_payload),
+					'timeout' => $timeout,
+					'headers' => array(
+						'Content-Type' => 'application/json',
+						'User-Agent' => 'CF7-Geolocation-Webhook/1.0'
+					)
+				);
+
+				$response = wp_remote_post($url, $args);
+				$success = !is_wp_error($response) && wp_remote_retrieve_response_code($response) >= 200 && wp_remote_retrieve_response_code($response) < 300;
+
+				if ($success) {
+					$success_count++;
+				}
+			}
+
+			if ($success_count > 0) {
+				wp_send_json_success( array(
+					'message' => sprintf(
+						__( 'Test completed successfully! %d out of %d webhooks responded successfully.', 'track-geolocation-of-users-using-contact-form-7' ),
+						$success_count,
+						$total_count
+					)
+				) );
+			} else {
+				wp_send_json_error( array(
+					'message' => __( 'Test failed. None of the configured webhooks responded successfully. Please check your webhook URLs and try again.', 'track-geolocation-of-users-using-contact-form-7' )
+				) );
+			}
+		}
+
+		/**
+		 * Manual test function for webhook functionality
+		 *
+		 * @method cfgeo_test_webhook_manual
+		 */
+		function cfgeo_test_webhook_manual() {
+			if (!current_user_can('manage_options')) {
+				return;
+			}
+			
+			$test_form_data = array(
+				'name' => 'Test User',
+				'email' => 'test@example.com',
+				'message' => 'This is a test webhook submission'
+			);
+			
+			$test_geo_data = array(
+				'country' => 'United States',
+				'state' => 'California',
+				'city' => 'San Francisco',
+				'latitude' => '37.7749',
+				'longitude' => '-122.4194',
+				'lat_long' => '37.7749,-122.4194',
+				'ip_address' => '127.0.0.1'
+			);
+			
+			// Call the webhook function from the lib class
+			CFGEO()->lib->cfgeo_send_webhook_data($test_form_data, $test_geo_data);
+		}
+
+		/**
+		 * AJAX handler for getting webhook logs
+		 *
+		 * @method action__cfgeo_ajax_get_webhook_logs
+		 */
+		function action__cfgeo_ajax_get_webhook_logs() {
+			// Verify nonce - check both possible nonce names
+			$nonce_valid = false;
+			if (isset($_POST['nonce'])) {
+				$nonce_valid = wp_verify_nonce($_POST['nonce'], 'cfgeo_filter_nonce') || 
+							   wp_verify_nonce($_POST['nonce'], 'cfgeo_webhook_logs_nonce');
+			}
+			
+			if (!$nonce_valid) {
+				wp_send_json_error(array(
+					'message' => __('Security check failed. Please refresh the page and try again.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check permissions
+			if ( !current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(array(
+					'message' => __('Insufficient permissions to perform this action.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			$logs = get_option('cfgeo_webhook_logs', array());
+			
+			// Format timestamps for display
+			foreach ($logs as &$log) {
+				$timestamp = strtotime($log['timestamp']);
+				$log['timestamp'] = $timestamp ? date('Y-m-d H:i:s', $timestamp) : $log['timestamp'];
+			}
+
+			wp_send_json_success( array(
+				'logs' => $logs
 			) );
 		}
 	}
