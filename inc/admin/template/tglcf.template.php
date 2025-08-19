@@ -41,7 +41,6 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-shortcode-info' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-shortcode-info' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Shortcode Info', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
-		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-webhooks-api' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-webhooks-api' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Webhooks', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 	</h2>
 	<?php settings_errors(); ?>
 	<form method="post" action="options.php" class="setting-geolocation">
