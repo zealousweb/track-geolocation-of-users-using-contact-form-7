@@ -843,7 +843,6 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			if ( isset( $_POST['search_term'] ) && !empty( $_POST['search_term'] ) ) {
 				$search_term = sanitize_text_field( $_POST['search_term'] );
 				$args['search_term'] = $search_term;
-				$args['s'] = $search_term;
 				// Also search in meta fields
 				$args['meta_query'][] = array(
 					'relation' => 'OR',
