@@ -238,10 +238,8 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 								'<p>Enter the webhook URLs where you want to send geolocation data. You can add multiple URLs, one per line.</p>','track-geolocation-of-users-using-contact-form-7' ),
 		'webhook_secret'	=> esc_html( '<h3>Webhook Secret Key</h3>' .
 								'<p>Optional secret key for webhook authentication. This will be used to create a signature for webhook payloads.</p>','track-geolocation-of-users-using-contact-form-7' ),
-		'webhook_timeout'	=> esc_html( '<h3>Request Timeout</h3>' .
-								'<p>Maximum time (in seconds) to wait for webhook response. Recommended: 30 seconds.</p>','track-geolocation-of-users-using-contact-form-7' ),
-		'webhook_retry'	=> esc_html( '<h3>Retry Failed Webhooks</h3>' .
-								'<p>If enabled, failed webhook deliveries will be automatically retried up to 3 times with increasing delays.</p>','track-geolocation-of-users-using-contact-form-7' ),
+
+
 		'form_graph_url'=> $form_graph_url,
 		'google_api'	=> $google_api,
 		'graph_color'	=> $cfgeo_graph_color,

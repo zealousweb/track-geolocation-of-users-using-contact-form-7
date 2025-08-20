@@ -29,8 +29,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			add_action( 'admin_menu',               array( $this, 'zw_settings_menu' ) );
 			add_action( 'wpcf7_before_send_mail',   array( $this, 'cfgeo_before_send_mail' ), 20, 3 );
 			
-			// Add webhook retry cron hook
-			add_action( 'cfgeo_webhook_retry', array( $this, 'cfgeo_handle_webhook_retry' ) );
+
 			
 			// Add webhook send cron hook
 			add_action( 'cfgeo_send_webhook', array( $this, 'cfgeo_send_webhook_data' ) );
@@ -85,8 +84,6 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			register_setting("cfgeo_webhook_api", "cfgeo_webhook_enabled");
 			register_setting("cfgeo_webhook_api", "cfgeo_webhook_urls");
 			register_setting("cfgeo_webhook_api", "cfgeo_webhook_secret");
-			register_setting("cfgeo_webhook_api", "cfgeo_webhook_timeout");
-			register_setting("cfgeo_webhook_api", "cfgeo_webhook_retry");
 
 			if( isset($_GET["tab"]) ){
 				//Add a new section to a settings page.
@@ -106,8 +103,6 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					add_settings_field("cfgeo_webhook_enabled", __("<label>Enable Webhook API </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-enabled></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_enabled_data'), self::$setting_page, "cfgeo_webhook_api");
 					add_settings_field("cfgeo_webhook_urls", __("<label>Webhook URLs </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-urls></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_urls_data'), self::$setting_page, "cfgeo_webhook_api");
 					add_settings_field("cfgeo_webhook_secret", __("<label>Webhook Secret Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-secret></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_webhook_api", array('cfgeo_webhook_secret'));
-					add_settings_field("cfgeo_webhook_timeout", __("<label>Request Timeout (seconds) </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-timeout></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$setting_page, "cfgeo_webhook_api", array('cfgeo_webhook_timeout'));
-					add_settings_field("cfgeo_webhook_retry", __("<label>Retry Failed Webhooks </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-retry></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_retry_data'), self::$setting_page, "cfgeo_webhook_api");
 				}
 			}else{
 					//Add a new section to a settings page.
@@ -236,11 +231,12 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					if (get_option('cfgeo_debug_mode')) {
 						error_log('CFGEO Webhook: Cron scheduling failed, sending webhook immediately');
 					}
-					$this->cfgeo_send_webhook_data($data, $geo_data);
+					
 				} else {
 					// Manually trigger cron processing to ensure webhook is sent
 					if (get_option('cfgeo_debug_mode')) {
 						error_log('CFGEO Webhook: Manually triggering cron processing');
+						$this->cfgeo_send_webhook_data($data, $geo_data);
 					}
 					spawn_cron();
 				}
@@ -957,17 +953,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			<?php
 		}
 
-		/**
-		 * [cfgeo_display_webhook_retry_data Display Webhook Retry Checkbox in setting page.]
-		 * @return [html] [field generate]
-		 */
-		function cfgeo_display_webhook_retry_data()
-		{
-			?>
-			<input type="checkbox" name="cfgeo_webhook_retry" id="cfgeo_webhook_retry" value="1" <?php checked( 1, get_option('cfgeo_webhook_retry'), true ); ?> />
-			<p class="description"><?php esc_html_e('If enabled, failed webhook deliveries will be retried up to 3 times.', 'track-geolocation-of-users-using-contact-form-7'); ?></p>
-			<?php
-		}
+
 
 		/**
 		 * [cfgeo_send_webhook_data Send webhook data to external platforms.]
@@ -1028,11 +1014,8 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 				$payload['signature'] = hash_hmac('sha256', wp_json_encode($payload), $webhook_secret);
 			}
 
-			// Get timeout setting
-			$timeout = get_option('cfgeo_webhook_timeout', 30);
-			$timeout = intval($timeout);
-			if ($timeout < 5) $timeout = 5;
-			if ($timeout > 60) $timeout = 60;
+			// Set default timeout (30 seconds)
+			$timeout = 30;
 
 			// Send to each webhook URL
 			foreach ($urls as $url) {
@@ -1082,10 +1065,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			// Log webhook attempt
 			$this->cfgeo_log_webhook_attempt($url, $success, $response);
 
-			// Retry on failure if enabled
-			if (!$success && get_option('cfgeo_webhook_retry')) {
-				$this->cfgeo_schedule_webhook_retry($url, $payload, $timeout);
-			}
+
 		}
 
 		/**
@@ -1116,56 +1096,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			update_option('cfgeo_webhook_logs', $logs);
 		}
 
-		/**
-		 * [cfgeo_schedule_webhook_retry Schedule webhook retry.]
-		 * @param  [string] $url [Webhook URL]
-		 * @param  [array] $payload [Webhook payload]
-		 * @param  [int] $timeout [Request timeout]
-		 * @return [void]
-		 */
-		function cfgeo_schedule_webhook_retry($url, $payload, $timeout) {
-			// Schedule retry using WordPress cron
-			$retry_data = array(
-				'url' => $url,
-				'payload' => $payload,
-				'timeout' => $timeout,
-				'retry_count' => 1
-			);
 
-			wp_schedule_single_event(time() + 300, 'cfgeo_webhook_retry', array($retry_data));
-		}
-
-		/**
-		 * [cfgeo_handle_webhook_retry Handle webhook retry.]
-		 * @param  [array] $retry_data [Retry data]
-		 * @return [void]
-		 */
-		function cfgeo_handle_webhook_retry($retry_data) {
-			$url = $retry_data['url'];
-			$payload = $retry_data['payload'];
-			$timeout = $retry_data['timeout'];
-			$retry_count = $retry_data['retry_count'];
-
-			$response = wp_remote_post($url, array(
-				'body' => wp_json_encode($payload),
-				'timeout' => $timeout,
-				'headers' => array(
-					'Content-Type' => 'application/json',
-					'User-Agent' => 'CF7-Geolocation-Webhook/1.0'
-				)
-			));
-
-			$success = !is_wp_error($response) && wp_remote_retrieve_response_code($response) >= 200 && wp_remote_retrieve_response_code($response) < 300;
-
-			// Log retry attempt
-			$this->cfgeo_log_webhook_attempt($url, $success, $response);
-
-			// Schedule another retry if still failed and under retry limit
-			if (!$success && $retry_count < 3) {
-				$retry_data['retry_count'] = $retry_count + 1;
-				wp_schedule_single_event(time() + (600 * $retry_count), 'cfgeo_webhook_retry', array($retry_data));
-			}
-		}
 
 	}
 	add_action( 'plugins_loaded', function() {

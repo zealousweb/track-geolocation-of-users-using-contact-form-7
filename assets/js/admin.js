@@ -123,23 +123,9 @@
 			} ).pointer('open');
 		});
 
-		jQuery( '#cfgeo-webhook-timeout' ).on( 'mouseenter click', function() {
-			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
-			jQuery( '#cfgeo-webhook-timeout' ).pointer({
-				pointerClass: 'wp-pointer cfgeo-pointer',
-				content: translate_string_geo.webhook_timeout,
-				position: 'left center',
-			} ).pointer('open');
-		});
 
-		jQuery( '#cfgeo-webhook-retry' ).on( 'mouseenter click', function() {
-			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
-			jQuery( '#cfgeo-webhook-retry' ).pointer({
-				pointerClass: 'wp-pointer cfgeo-pointer',
-				content: translate_string_geo.webhook_retry,
-				position: 'left center',
-			} ).pointer('open');
-		});
+
+
 
 		// Advanced Filter JavaScript for CFGEO Admin Panel
 		// Handles AJAX filtering, debouncing, pagination, and sorting
