@@ -28,6 +28,8 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		$active_tab = "cfgeo-setting";
 	}elseif($_GET["tab"] == "cfgeo-submission-graph" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 		$active_tab = "cfgeo-submission-graph";
+	}elseif($_GET["tab"] == "cfgeo-webhook-api" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
+		$active_tab = "cfgeo-webhook-api";
 	}else{
 		$active_tab = "cfgeo-shortcode-info";
 	}
@@ -40,26 +42,56 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 	<h2 class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-webhook-api' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-webhook-api' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Webhook API', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-shortcode-info' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-shortcode-info' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Shortcode Info', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 	</h2>
 	<?php settings_errors(); ?>
 	<form method="post" action="options.php" class="setting-geolocation">
 	<?php
-		//add_settings_section callback is displayed here. For every new section we need to call settings_fields.
-		settings_fields("cfgeo_googleapi");
-		// all the add_settings_field callbacks is displayed here
-		do_settings_sections(self::$setting_page);
-		if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
-			if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
+		if(isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-webhook-api"){
+			//add_settings_section callback is displayed here. For every new section we need to call settings_fields.
+			settings_fields("cfgeo_webhook_api");
+			// all the add_settings_field callbacks is displayed here
+			do_settings_sections(self::$setting_page);
+			// Add the submit button to serialize the options
+			submit_button();
+		}else{
+			//add_settings_section callback is displayed here. For every new section we need to call settings_fields.
+			settings_fields("cfgeo_googleapi");
+			// all the add_settings_field callbacks is displayed here
+			do_settings_sections(self::$setting_page);
+			if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
+				if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
+					// Add the submit button to serialize the options
+					submit_button();
+				}
+			}else{
 				// Add the submit button to serialize the options
 				submit_button();
 			}
-		}else{
-			// Add the submit button to serialize the options
-			submit_button();
 		}
 	?>
 	</form>
+	
+	<?php
+	// Webhook API Tab Content (after form for display purposes)
+	if(isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-webhook-api"){
+		echo '<div class="cfgeo-webhook-settings">';
+		echo '<h3>' . esc_html__( 'Webhook API Configuration', 'track-geolocation-of-users-using-contact-form-7' ) . '</h3>';
+		echo '<p>' . esc_html__( 'Configure webhooks to send geolocation data to external platforms when form submissions occur.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
+		
+		echo '<div class="cfgeo-webhook-info">';
+		echo '<h4>' . esc_html__( 'How it works:', 'track-geolocation-of-users-using-contact-form-7' ) . '</h4>';
+		echo '<ul>';
+		echo '<li>' . esc_html__( 'When a form is submitted, geolocation data will be sent to your configured webhook URL', 'track-geolocation-of-users-using-contact-form-7' ) . '</li>';
+		echo '<li>' . esc_html__( 'Data is sent as JSON payload via POST request', 'track-geolocation-of-users-using-contact-form-7' ) . '</li>';
+		echo '<li>' . esc_html__( 'You can configure multiple webhooks for different platforms', 'track-geolocation-of-users-using-contact-form-7' ) . '</li>';
+		echo '<li>' . esc_html__( 'Webhook delivery is asynchronous and won\'t affect form submission speed', 'track-geolocation-of-users-using-contact-form-7' ) . '</li>';
+		echo '</ul>';
+		echo '</div>';
+		echo '</div>';
+	}
+	?>
 	<?php
 	if(isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-submission-graph" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){ ?>
 		<h3><?php esc_html__("A Detailed graph on the basis of submitted forms.",'track-geolocation-of-users-using-contact-form-7'); ?></h3>
@@ -166,31 +198,52 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 			</tfoot>
 		</table>';
 	}
+	
+	// Webhook API Test and Logs (outside form)
+	if(isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-webhook-api"){
+		echo '<div class="cfgeo-webhook-test">';
+		echo '<h4>' . esc_html__( 'Test Webhook', 'track-geolocation-of-users-using-contact-form-7' ) . '</h4>';
+		echo '<p>' . esc_html__( 'Click the button below to test your webhook configuration with sample data:', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
+		echo '<button type="button" id="test-webhook" class="button button-secondary">' . esc_html__( 'Test Webhook', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
+		echo '<div id="webhook-test-result" style="margin-top: 10px; display: none;"></div>';
+		echo '</div>';
+		
+		echo '<div class="cfgeo-webhook-logs">';
+		echo '<h4>' . esc_html__( 'Webhook Logs', 'track-geolocation-of-users-using-contact-form-7' ) . '</h4>';
+		echo '<p>' . esc_html__( 'Recent webhook delivery attempts:', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
+		echo '<div id="webhook-logs" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #ddd;">';
+		echo '<p class="description">' . esc_html__( 'No webhook logs available yet.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
+		echo '</div>';
+		echo '</div>';
+	}
 	?>
 </div>
 <?php
 
 	// Localize the script with new data
 	$translation_array = array(
-		'ipstack' => '<h3>' . esc_html__( 'ipstack API Access Key', 'track-geolocation-of-users-using-contact-form-7' ) . '</h3>' .
-					'<p>' . esc_html__( 'Enter your ipstack API Access Key which you can get by signing up for the Free Plan from', 'track-geolocation-of-users-using-contact-form-7' ) .
-					' <a href="https://ipstack.com/signup/free" target="_blank">' . esc_html__( 'here', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>.</p>',
+		'ipstack'		=> esc_html( '<h3>ipstack API Access Key</h3>' .
+								'<p>Enter Your ipstack API Access Key Which you can get it by signing up for Free Plan from <a href="https://ipstack.com/signup/free" target="_blank">here</a>.
+								</p>','track-geolocation-of-users-using-contact-form-7' ),
+		'google'		=> esc_html( '<h3>Google Map Geolocation API Key</h3>' .
+								'<p>Get You Google Map API key from <a href="'.$google_api_link.'" target="_blank">here</a> and make sure "Maps Static API" is Enabled.
+								</p>','track-geolocation-of-users-using-contact-form-7' ),
+		'debug'			=> esc_html( '<h3>Debug Mode</h3>' .
+								'<p>Enabling the debug mode will help us to track any issue with the API.</p>','track-geolocation-of-users-using-contact-form-7' ),
+		'graphcolor'	=> esc_html( '<h3>Color Picker</h3>' .
+								'<p>Click on the textbox to Select the Color for Submission Graph.</p>','track-geolocation-of-users-using-contact-form-7' ),
+		'webhook_enabled'=> esc_html( '<h3>Enable Webhook API</h3>' .
+								'<p>Enable this option to send geolocation data to external platforms via webhooks when form submissions occur.</p>','track-geolocation-of-users-using-contact-form-7' ),
+		'webhook_urls'	=> esc_html( '<h3>Webhook URLs</h3>' .
+								'<p>Enter the webhook URLs where you want to send geolocation data. You can add multiple URLs, one per line.</p>','track-geolocation-of-users-using-contact-form-7' ),
+		'webhook_secret'	=> esc_html( '<h3>Webhook Secret Key</h3>' .
+								'<p>Optional secret key for webhook authentication. This will be used to create a signature for webhook payloads.</p>','track-geolocation-of-users-using-contact-form-7' ),
 
-		'google' => '<h3>' . esc_html__( 'Google Map Geolocation API Key', 'track-geolocation-of-users-using-contact-form-7' ) . '</h3>' .
-					'<p>' . esc_html__( 'Get your Google Map API key from', 'track-geolocation-of-users-using-contact-form-7' ) .
-					' <a href="' . esc_url( $google_api_link ) . '" target="_blank">' . esc_html__( 'here', 'track-geolocation-of-users-using-contact-form-7' ) . '</a> ' .
-					esc_html__( 'and make sure "Maps Static API" is enabled.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>',
 
-		'debug' => '<h3>' . esc_html__( 'Debug Mode', 'track-geolocation-of-users-using-contact-form-7' ) . '</h3>' .
-					'<p>' . esc_html__( 'Enabling the debug mode will help us to track any issue with the API.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>',
-
-		'graphcolor' => '<h3>' . esc_html__( 'Color Picker', 'track-geolocation-of-users-using-contact-form-7' ) . '</h3>' .
-						'<p>' . esc_html__( 'Click on the textbox to select the color for the submission graph.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>',
-
-		'form_graph_url' => $form_graph_url,
-		'google_api'     => $google_api,
-		'graph_color'    => $cfgeo_graph_color,
-		'cntry_data'     => $data_arr_to_str
+		'form_graph_url'=> $form_graph_url,
+		'google_api'	=> $google_api,
+		'graph_color'	=> $cfgeo_graph_color,
+		'cntry_data'	=> $data_arr_to_str
 	);
 	wp_enqueue_script( 'wp-pointer' );
 	wp_enqueue_style( 'wp-pointer' );
