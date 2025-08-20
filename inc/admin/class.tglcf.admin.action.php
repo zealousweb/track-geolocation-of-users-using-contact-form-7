@@ -843,7 +843,6 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			if ( isset( $_POST['search_term'] ) && !empty( $_POST['search_term'] ) ) {
 				$search_term = sanitize_text_field( $_POST['search_term'] );
 				$args['search_term'] = $search_term;
-				$args['s'] = $search_term;
 				// Also search in meta fields
 				$args['meta_query'][] = array(
 					'relation' => 'OR',
@@ -1109,36 +1108,6 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					'message' => __( 'Test failed. None of the configured webhooks responded successfully. Please check your webhook URLs and try again.', 'track-geolocation-of-users-using-contact-form-7' )
 				) );
 			}
-		}
-
-		/**
-		 * Manual test function for webhook functionality
-		 *
-		 * @method cfgeo_test_webhook_manual
-		 */
-		function cfgeo_test_webhook_manual() {
-			if (!current_user_can('manage_options')) {
-				return;
-			}
-			
-			$test_form_data = array(
-				'name' => 'Test User',
-				'email' => 'test@example.com',
-				'message' => 'This is a test webhook submission'
-			);
-			
-			$test_geo_data = array(
-				'country' => 'United States',
-				'state' => 'California',
-				'city' => 'San Francisco',
-				'latitude' => '37.7749',
-				'longitude' => '-122.4194',
-				'lat_long' => '37.7749,-122.4194',
-				'ip_address' => '127.0.0.1'
-			);
-			
-			// Call the webhook function from the lib class
-			CFGEO()->lib->cfgeo_send_webhook_data($test_form_data, $test_geo_data);
 		}
 
 		/**
