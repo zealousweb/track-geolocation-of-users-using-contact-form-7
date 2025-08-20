@@ -1111,36 +1111,6 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		}
 
 		/**
-		 * Manual test function for webhook functionality
-		 *
-		 * @method cfgeo_test_webhook_manual
-		 */
-		function cfgeo_test_webhook_manual() {
-			if (!current_user_can('manage_options')) {
-				return;
-			}
-			
-			$test_form_data = array(
-				'name' => 'Test User',
-				'email' => 'test@example.com',
-				'message' => 'This is a test webhook submission'
-			);
-			
-			$test_geo_data = array(
-				'country' => 'United States',
-				'state' => 'California',
-				'city' => 'San Francisco',
-				'latitude' => '37.7749',
-				'longitude' => '-122.4194',
-				'lat_long' => '37.7749,-122.4194',
-				'ip_address' => '127.0.0.1'
-			);
-			
-			// Call the webhook function from the lib class
-			CFGEO()->lib->cfgeo_send_webhook_data($test_form_data, $test_geo_data);
-		}
-
-		/**
 		 * AJAX handler for getting webhook logs
 		 *
 		 * @method action__cfgeo_ajax_get_webhook_logs
