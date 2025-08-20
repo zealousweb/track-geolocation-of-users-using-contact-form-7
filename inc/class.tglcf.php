@@ -109,17 +109,17 @@ if ( !class_exists( 'CFGEO' ) ) {
 			 */
 
 			$labels = array(
-				'name' => __( 'Geolocation Details', 'track-geolocation-of-users-using-contact-form-7' ),
-				'singular_name' => __( 'Geolocation Detail', 'track-geolocation-of-users-using-contact-form-7' ),
-				'edit_item' => __( 'Edit Submission', 'track-geolocation-of-users-using-contact-form-7' ),
-				'view_item' => __( 'View Submission', 'track-geolocation-of-users-using-contact-form-7' ),
-				'search_items' => __( 'Search Submissions', 'track-geolocation-of-users-using-contact-form-7' ),
-				'not_found' => __( 'No Submissions Found', 'track-geolocation-of-users-using-contact-form-7' ),
-				'not_found_in_trash' => __( 'No Submissions Found in Trash', 'track-geolocation-of-users-using-contact-form-7' ),
+				'name' => esc_html__( 'Geolocation Details', 'track-geolocation-of-users-using-contact-form-7' ),
+				'singular_name' => esc_html__( 'Geolocation Detail', 'track-geolocation-of-users-using-contact-form-7' ),
+				'edit_item' => esc_html__( 'Edit Submission', 'track-geolocation-of-users-using-contact-form-7' ),
+				'view_item' => esc_html__( 'View Submission', 'track-geolocation-of-users-using-contact-form-7' ),
+				'search_items' =>esc_html__( 'Search Submissions', 'track-geolocation-of-users-using-contact-form-7' ),
+				'not_found' => esc_html__( 'No Submissions Found', 'track-geolocation-of-users-using-contact-form-7' ),
+				'not_found_in_trash' => esc_html__( 'No Submissions Found in Trash', 'track-geolocation-of-users-using-contact-form-7' ),
 			);
 
 			$args = array(
-				'label' => __( 'Geolocation Details', 'track-geolocation-of-users-using-contact-form-7' ),
+				'label' => esc_html__( 'Geolocation Details', 'track-geolocation-of-users-using-contact-form-7' ),
 				'labels' => $labels,
 				'description' => '',
 				'public' => false,

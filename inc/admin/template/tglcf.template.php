@@ -38,7 +38,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"></div>
-	<h2><?php echo esc_html( self::$activation_menuname ); ?></h2>
+	<h2><?php echo esc_html__( self::$activation_menuname, 'track-geolocation-of-users-using-contact-form-7' ); ?></h2>
 	<h2 class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
@@ -109,7 +109,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		}
 		$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) ? sanitize_text_field($_GET['form-id']) : '' ;
 		echo '<select name="form-id" id="form-id-graph">';
-		echo '<option value="all">' . esc_html( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+		echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 		foreach ( $posts as $post ) {
 			echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
 		}
@@ -133,66 +133,66 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		<table class="shortcode-table">
 			<thead>
 				<tr>
-					<td> <strong>'. esc_html('Details You get in EMail.','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
-					<td> <strong>'. esc_html('Shortcode','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
+					<td> <strong>'. esc_html__('Details You get in EMail.','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
+					<td> <strong>'. esc_html__('Shortcode','track-geolocation-of-users-using-contact-form-7').'</strong> </td>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td>'. esc_html('To add latitude/longitude, country, state, city.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add latitude/longitude, country, state, city.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add latitude/longitude, country, state, city & Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add latitude/longitude, country, state, city & Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation lat-long country state city gmap]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just latitude/longitude.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just latitude/longitude.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td>
 						<input type="text" value="[geolocation lat-long]" style="width: 100%;color: #000;" disabled="">
 					</td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just latitude/longitude without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just latitude/longitude without label.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td>
-						<input type="text" value="[geolocation lat-long label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled="">
+						<input type="text" value="[geolocation lat-long label="no"]" style="width: 100%;color: #000;" disabled="">
 					</td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just country.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just country.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation country]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just Country without label.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation country label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled=""></td>
+					<td>'. esc_html__('To add just Country without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation country label="no"]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just state.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just state.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation state]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just State without label.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation state label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled=""></td>
+					<td>'. esc_html__('To add just State without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation state label="no"]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just city.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just city.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation city]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just City without label.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation city label=&quot;no&quot;]" style="width: 100%;color: #000;" disabled=""></td>
+					<td>'. esc_html__('To add just City without label.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td><input type="text" value="[geolocation city label="no"]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
-					<td>'. esc_html('To add just Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
+					<td>'. esc_html__('To add just Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td><input type="text" value="[geolocation gmap]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 			</tbody>
 			<tfoot>
 				<tr>
 					<td colspan="2">
-						<h3>'. esc_html('Note: To add Google map static image in email you have to enable this 2 option.','track-geolocation-of-users-using-contact-form-7').'</h3>
-						<p> <small>'. esc_html('1) You have to enable "Use HTML content type" in email setting of Contact form 7.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
-						<p> <small>'. esc_html('2) You have to enable "Maps Static API" in Google Map API.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
+						<h3>'. esc_html__('Note: To add Google map static image in email you have to enable this 2 option.','track-geolocation-of-users-using-contact-form-7').'</h3>
+						<p> <small>'. esc_html__('1) You have to enable "Use HTML content type" in email setting of Contact form 7.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
+						<p> <small>'. esc_html__('2) You have to enable "Maps Static API" in Google Map API.','track-geolocation-of-users-using-contact-form-7').'</small>	</p>
 					</td>
 				</tr>
 			</tfoot>
@@ -252,4 +252,3 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 	wp_enqueue_style( CFGEO_PREFIX . '_admin_css' );
 	wp_localize_script( CFGEO_PREFIX . '_admin_js', 'translate_string_geo', $translation_array );
 	wp_enqueue_script( CFGEO_PREFIX . '_admin_js' );
-?>
