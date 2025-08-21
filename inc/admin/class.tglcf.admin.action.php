@@ -27,7 +27,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			add_action( 'add_meta_boxes',                           array( $this, 'action__cfgeo_add_meta_boxes' ) );
 			add_action( 'manage_'.CFGEO_POST_TYPE.'_posts_custom_column',  array( $this, 'action__manage_cfgeozw_data_posts_custom_column' ), 10, 2 );
 			add_action( 'pre_get_posts',                            array( $this, 'action__cfgeo_pre_get_posts' ) );
-			add_action( 'restrict_manage_posts',                    array( $this, 'action__cfgeo_restrict_manage_posts' ) );
+			
 			add_action( 'parse_query',                              array( $this, 'action__cfgeo_parse_query' ) );
 			
 			// Add AJAX handlers for real-time filtering
@@ -35,9 +35,15 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			add_action( 'wp_ajax_nopriv_cfgeo_filter_submissions',  array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
 			
 			// Add AJAX handlers for webhook functionality
-					add_action( 'wp_ajax_cfgeo_test_webhook',               array( $this, 'action__cfgeo_ajax_test_webhook' ) );
-		add_action( 'wp_ajax_cfgeo_get_webhook_logs',           array( $this, 'action__cfgeo_ajax_get_webhook_logs' ) );
-		add_action( 'wp_ajax_cfgeo_clear_webhook_logs',         array( $this, 'action__cfgeo_ajax_clear_webhook_logs' ) );
+			add_action( 'wp_ajax_cfgeo_test_webhook',               array( $this, 'action__cfgeo_ajax_test_webhook' ) );
+		
+			add_action( 'wp_ajax_cfgeo_get_webhook_logs',           array( $this, 'action__cfgeo_ajax_get_webhook_logs' ) );
+		
+			add_action( 'wp_ajax_cfgeo_clear_webhook_logs',         array( $this, 'action__cfgeo_ajax_clear_webhook_logs' ) );
+
+			add_action( 'manage_posts_extra_tablenav', array( $this,'cfgeo_add_extra_filters'), 10, 1 );
+
+		
 		}
 
 		/*
@@ -53,14 +59,130 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		/**
 		 * Action: admin_init
 		 *
+		 * - cfgeo_add_extra_filters
+		 * - advance filter 
+		 */
+
+		function cfgeo_add_extra_filters( $which ) {
+
+			global $typenow;
+
+		    // Only show on your custom post type
+		    if ( $typenow !== 'cfgeozw_data' ) {
+		        return;
+		    }
+
+		    // Only top position (before pagination)
+		    if ( $which !== 'top' ) {
+		        return;
+		    }
+
+		    $posts = get_posts(
+				array(
+					'post_type'        => 'wpcf7_contact_form',
+					'post_status'      => 'publish',
+					'suppress_filters' => false,
+					'posts_per_page'   => -1
+				)
+			);
+
+			// Get unique countries and cities for filter dropdowns
+			$countries = $this->get_unique_meta_values( 'cfgeo-country' );
+			$cities = $this->get_unique_meta_values( 'cfgeo-city' );
+
+			// Get current filter values
+			$selected_form = isset( $_GET['form-id'] ) ? sanitize_text_field( $_GET['form-id'] ) : '';
+			$selected_country = isset( $_GET['country-filter'] ) ? sanitize_text_field( $_GET['country-filter'] ) : '';
+			$selected_city = isset( $_GET['city-filter'] ) ? sanitize_text_field( $_GET['city-filter'] ) : '';
+			$date_from = isset( $_GET['date-from'] ) ? sanitize_text_field( $_GET['date-from'] ) : '';
+			$date_to = isset( $_GET['date-to'] ) ? sanitize_text_field( $_GET['date-to'] ) : '';
+			$search_term = isset( $_GET['search-term'] ) ? sanitize_text_field( $_GET['search-term'] ) : '';
+
+
+			echo '<div class="cfgeo-advanced-filters">';
+			
+			// Loading indicator
+			echo '<div class="cfgeo-loading"><div class="spinner is-active"></div></div>';
+			
+			// Hidden inputs for AJAX functionality
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'date' ) . '">';
+			echo '<input type="hidden" name="order" value="' . esc_attr( isset( $_GET['order'] ) ? $_GET['order'] : 'DESC' ) . '">';
+			echo '<input type="hidden" name="paged" value="' . esc_attr( isset( $_GET['paged'] ) ? $_GET['paged'] : '1' ) . '">';
+			
+			// Search input
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label for="search-term">' . esc_html__( 'Search:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<input type="text" name="search-term" id="search-term" value="' . esc_attr( $search_term ) . '" placeholder="' . esc_attr__( 'Search by any field...', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 200px;">';
+			echo '</div>';
+
+			// Form filter
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label for="form-id">' . esc_html__( 'Form:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select name="form-id" id="form-id" style="width: 200px;">';
+			echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+			if ( !empty( $posts ) ) {
+			foreach ( $posts as $post ) {
+					echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected_form, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
+				}
+			}
+			echo '</select>';
+			echo '</div>';
+
+			// Country filter
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label for="country-filter">' . esc_html__( 'Country:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select name="country-filter" id="country-filter" style="width: 200px;">';
+			echo '<option value="">' . esc_html__( 'All Countries', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+			if ( !empty( $countries ) ) {
+				foreach ( $countries as $country ) {
+					echo '<option value="' . esc_attr( $country ) . '" ' . selected( $selected_country, $country, false ) . '>' . esc_html( $country ) . '</option>';
+				}
+			}
+			echo '</select>';
+			echo '</div>';
+
+			// City filter
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label for="city-filter">' . esc_html__( 'City:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select name="city-filter" id="city-filter" style="width: 200px;">';
+			echo '<option value="">' . esc_html__( 'All Cities', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+			if ( !empty( $cities ) ) {
+				foreach ( $cities as $city ) {
+					echo '<option value="' . esc_attr( $city ) . '" ' . selected( $selected_city, $city, false ) . '>' . esc_html( $city ) . '</option>';
+				}
+			}
+			echo '</select>';
+			echo '</div>';
+
+			// Date range filters
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label>' . esc_html__( 'Date Range:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<input type="date" name="date-from" id="date-from" value="' . esc_attr( $date_from ) . '" placeholder="' . esc_attr__( 'From', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px; margin-right: 5px;">';
+			echo '<input type="date" name="date-to" id="date-to" value="' . esc_attr( $date_to ) . '" placeholder="' . esc_attr__( 'To', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px;">';
+			echo '</div>';
+
+			// Filter and Export buttons
+			echo '<div class="cfgeo-filter-buttons">';
+			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="' . esc_attr__( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '<a href="#" class="button cfgeo-clear-filters">' . esc_html__( 'Clear Filters', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
+			echo '</div>';
+
+			echo '</div>';
+
+		}
+		/**
+		 * Action: admin_init
+		 *
 		 * - Register admin min js and admin min css
 		 *
 		 */
+
+
 		function action__cfgeo_init() {
 			wp_register_style( CFGEO_PREFIX . '_admin_css', CFGEO_URL . 'assets/css/admin.min.css', array(), CFGEO_VERSION );
 			wp_register_style( CFGEO_PREFIX . '_spectrum_css', CFGEO_URL . 'assets/css/spectrum.min.css', array(), CFGEO_VERSION );
 			wp_register_script( CFGEO_PREFIX . '_spectrum_js', CFGEO_URL . 'assets/js/spectrum.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
-			wp_register_script( CFGEO_PREFIX . '_admin_js', CFGEO_URL . 'assets/js/admin.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
+			wp_register_script( CFGEO_PREFIX . '_admin_js', CFGEO_URL . 'assets/js/admin.js', array( 'jquery-core' ), CFGEO_VERSION,true);
 			wp_register_script( CFGEO_PREFIX . '_graph_js', CFGEO_URL . 'assets/js/graph.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
 			wp_register_script( CFGEO_PREFIX . '_loader_js', 'https://www.gstatic.com/charts/loader.js', array( 'jquery-core' ), CFGEO_VERSION,true);
 		}
@@ -387,115 +509,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			}
 		}
 
-		/**
-		 * Action: restrict_manage_posts
-		 *
-		 * - Used to create advanced filters by form, country, city, date range and export functionality.
-		 *
-		 * @method action__cfgeo_restrict_manage_posts
-		 *
-		 * @param  string $post_type
-		 */
-		function action__cfgeo_restrict_manage_posts( $post_type ) {
-
-			if ( CFGEO_POST_TYPE != $post_type ) {
-				return;
-			}
-
-			// Get all forms
-			$posts = get_posts(
-				array(
-					'post_type'        => 'wpcf7_contact_form',
-					'post_status'      => 'publish',
-					'suppress_filters' => false,
-					'posts_per_page'   => -1
-				)
-			);
-
-			// Get unique countries and cities for filter dropdowns
-			$countries = $this->get_unique_meta_values( 'cfgeo-country' );
-			$cities = $this->get_unique_meta_values( 'cfgeo-city' );
-
-			// Get current filter values
-			$selected_form = isset( $_GET['form-id'] ) ? sanitize_text_field( $_GET['form-id'] ) : '';
-			$selected_country = isset( $_GET['country-filter'] ) ? sanitize_text_field( $_GET['country-filter'] ) : '';
-			$selected_city = isset( $_GET['city-filter'] ) ? sanitize_text_field( $_GET['city-filter'] ) : '';
-			$date_from = isset( $_GET['date-from'] ) ? sanitize_text_field( $_GET['date-from'] ) : '';
-			$date_to = isset( $_GET['date-to'] ) ? sanitize_text_field( $_GET['date-to'] ) : '';
-			$search_term = isset( $_GET['search-term'] ) ? sanitize_text_field( $_GET['search-term'] ) : '';
-
-			echo '<div class="cfgeo-advanced-filters">';
-			
-			// Loading indicator
-			echo '<div class="cfgeo-loading"><div class="spinner is-active"></div></div>';
-			
-			// Hidden inputs for AJAX functionality
-			echo '<input type="hidden" name="orderby" value="' . esc_attr( isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'date' ) . '">';
-			echo '<input type="hidden" name="order" value="' . esc_attr( isset( $_GET['order'] ) ? $_GET['order'] : 'DESC' ) . '">';
-			echo '<input type="hidden" name="paged" value="' . esc_attr( isset( $_GET['paged'] ) ? $_GET['paged'] : '1' ) . '">';
-			
-			// Search input
-			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="search-term">' . esc_html__( 'Search:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<input type="text" name="search-term" id="search-term" value="' . esc_attr( $search_term ) . '" placeholder="' . esc_attr__( 'Search by any field...', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 200px;">';
-			echo '</div>';
-
-			// Form filter
-			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="form-id">' . esc_html__( 'Form:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<select name="form-id" id="form-id" style="width: 200px;">';
-			echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
-			if ( !empty( $posts ) ) {
-			foreach ( $posts as $post ) {
-					echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected_form, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
-				}
-			}
-			echo '</select>';
-			echo '</div>';
-
-			// Country filter
-			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="country-filter">' . esc_html__( 'Country:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<select name="country-filter" id="country-filter" style="width: 200px;">';
-			echo '<option value="">' . esc_html__( 'All Countries', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
-			if ( !empty( $countries ) ) {
-				foreach ( $countries as $country ) {
-					echo '<option value="' . esc_attr( $country ) . '" ' . selected( $selected_country, $country, false ) . '>' . esc_html( $country ) . '</option>';
-				}
-			}
-			echo '</select>';
-			echo '</div>';
-
-			// City filter
-			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="city-filter">' . esc_html__( 'City:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<select name="city-filter" id="city-filter" style="width: 200px;">';
-			echo '<option value="">' . esc_html__( 'All Cities', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
-			if ( !empty( $cities ) ) {
-				foreach ( $cities as $city ) {
-					echo '<option value="' . esc_attr( $city ) . '" ' . selected( $selected_city, $city, false ) . '>' . esc_html( $city ) . '</option>';
-				}
-			}
-			echo '</select>';
-			echo '</div>';
-
-			// Date range filters
-			echo '<div class="cfgeo-filter-row">';
-			echo '<label>' . esc_html__( 'Date Range:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<input type="date" name="date-from" id="date-from" value="' . esc_attr( $date_from ) . '" placeholder="' . esc_attr__( 'From', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px; margin-right: 5px;">';
-			echo '<input type="date" name="date-to" id="date-to" value="' . esc_attr( $date_to ) . '" placeholder="' . esc_attr__( 'To', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px;">';
-			echo '</div>';
-
-			// Filter and Export buttons
-			echo '<div class="cfgeo-filter-buttons">';
-			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="' . esc_attr__( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
-			echo '<a href="#" class="button cfgeo-clear-filters">' . esc_html__( 'Clear Filters', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
-			echo '</div>';
-
-			echo '</div>';
-
-		}
-
+		
 		/**
 		 * Action: parse_query
 		 *
