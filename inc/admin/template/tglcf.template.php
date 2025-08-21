@@ -7,43 +7,43 @@
 * @since 2.0
 **/
 
-$form_graph_url    = admin_url("admin.php?page=geolocation-setting&tab=cfgeo-submission-graph&form-id=");
-$google_api        = get_option('cfgeo_google_api_key');
-$country_cnt       = $this->cfgeo_get_meta_values( 'cfgeo-country' );
-$google_api_link   = 'https://developers.google.com/maps/documentation/geolocation/get-api-key';
+$cfgeo_form_graph_url    = admin_url("admin.php?page=geolocation-setting&tab=cfgeo-submission-graph&form-id=");
+$cfgeo_google_api        = get_option('cfgeo_google_api_key');
+$cfgeo_country_cnt       = $this->cfgeo_get_meta_values( 'cfgeo-country' );
+$cfgeo_google_api_link   = 'https://developers.google.com/maps/documentation/geolocation/get-api-key';
 $cfgeo_graph_color = get_option( 'cfgeo_color_picker' );
 
 if($cfgeo_graph_color == ''){
 	// if no color selected this color will be show by default
 	$cfgeo_graph_color = '#0073aa';
 }
-if($country_cnt){
-	$data_arr_to_str = $country_cnt;
+if($cfgeo_country_cnt){
+	$cfgeo_data_arr_to_str = $cfgeo_country_cnt;
 }else{
-	$data_arr_to_str = '';
+	$cfgeo_data_arr_to_str = '';
 }
-$active_tab = "cfgeo-setting";
+$cfgeo_active_tab = "cfgeo-setting";
 if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 	if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
-		$active_tab = "cfgeo-setting";
+		$cfgeo_active_tab = "cfgeo-setting";
 	}elseif($_GET["tab"] == "cfgeo-submission-graph" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
-		$active_tab = "cfgeo-submission-graph";
+		$cfgeo_active_tab = "cfgeo-submission-graph";
 	}elseif($_GET["tab"] == "cfgeo-webhook-api" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
-		$active_tab = "cfgeo-webhook-api";
+		$cfgeo_active_tab = "cfgeo-webhook-api";
 	}else{
-		$active_tab = "cfgeo-shortcode-info";
+		$cfgeo_active_tab = "cfgeo-shortcode-info";
 	}
 }
 ?>
 
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"></div>
-	<h2><?php echo esc_html__( self::$activation_menuname, 'track-geolocation-of-users-using-contact-form-7' ); ?></h2>
+	<h2><?php echo esc_html__( self::$cfgeo_activation_menuname, 'track-geolocation-of-users-using-contact-form-7' ); ?></h2>
 	<h2 class="nav-tab-wrapper">
-		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
-		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
-		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-webhook-api' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-webhook-api' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Webhook API', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
-		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-shortcode-info' ); ?>" class="nav-tab <?php echo esc_attr( $active_tab == 'cfgeo-shortcode-info' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Shortcode Info', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $cfgeo_active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $cfgeo_active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-webhook-api' ); ?>" class="nav-tab <?php echo esc_attr( $cfgeo_active_tab == 'cfgeo-webhook-api' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Webhook API', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
+		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-shortcode-info' ); ?>" class="nav-tab <?php echo esc_attr( $cfgeo_active_tab == 'cfgeo-shortcode-info' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Shortcode Info', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 	</h2>
 	<?php settings_errors(); ?>
 	<form method="post" action="options.php" class="setting-geolocation">
@@ -52,14 +52,14 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 			//add_settings_section callback is displayed here. For every new section we need to call settings_fields.
 			settings_fields("cfgeo_webhook_api");
 			// all the add_settings_field callbacks is displayed here
-			do_settings_sections(self::$setting_page);
+			do_settings_sections(self::$cfgeo_setting_page);
 			// Add the submit button to serialize the options
 			submit_button();
 		}else{
 			//add_settings_section callback is displayed here. For every new section we need to call settings_fields.
 			settings_fields("cfgeo_googleapi");
 			// all the add_settings_field callbacks is displayed here
-			do_settings_sections(self::$setting_page);
+			do_settings_sections(self::$cfgeo_setting_page);
 			if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 				if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 					// Add the submit button to serialize the options
@@ -96,7 +96,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 	if(isset($_GET["tab"]) && $_GET["tab"] == "cfgeo-submission-graph" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){ ?>
 		<h3><?php esc_html__("A Detailed graph on the basis of submitted forms.",'track-geolocation-of-users-using-contact-form-7'); ?></h3>
 		<?php
-		$posts = get_posts(
+		$cfgeo_posts = get_posts(
 			array(
 				'post_type'        => 'wpcf7_contact_form',
 				'post_status'      => 'publish',
@@ -104,25 +104,25 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 				'posts_per_page'   => -1
 			)
 		);
-		if ( empty( $posts ) ) {
+		if ( empty( $cfgeo_posts ) ) {
 			return;
 		}
-		$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) ? sanitize_text_field($_GET['form-id']) : '' ;
+		$cfgeo_selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) ? sanitize_text_field($_GET['form-id']) : '' ;
 		echo '<select name="form-id" id="form-id-graph">';
 		echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
-		foreach ( $posts as $post ) {
-			echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
+		foreach ( $cfgeo_posts as $cfgeo_post ) {
+			echo '<option value="' . esc_attr( $cfgeo_post->ID ) . '" ' . selected( $cfgeo_selected, $cfgeo_post->ID, false ) . '>' . esc_html( $cfgeo_post->post_title ) . '</option>';
 		}
 		echo '</select>';
 		?>
 		<div id="entry_submission_graph" style="margin-top:15px; width: 1080px; height: 500px;"></div>
 		<?php
-		$translation_graph_array = array(
-			'google_api'	=> $google_api,
+		$cfgeo_translation_graph_array = array(
+			'google_api'	=> $cfgeo_google_api,
 			'graph_color'	=> $cfgeo_graph_color,
-			'cntry_data'	=> $data_arr_to_str
+			'cntry_data'	=> $cfgeo_data_arr_to_str
 		);
-		wp_localize_script( CFGEO_PREFIX . '_graph_js', 'translate_string_graph_geo', $translation_graph_array );
+		wp_localize_script( CFGEO_PREFIX . '_graph_js', 'translate_string_graph_geo', $cfgeo_translation_graph_array );
 		wp_enqueue_script( CFGEO_PREFIX . '_loader_js' );
 		wp_enqueue_script( CFGEO_PREFIX . '_graph_js' );
 		?>
@@ -224,12 +224,12 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 <?php
 
 	// Localize the script with new data
-	$translation_array = array(
+	$cfgeo_translation_array = array(
 		'ipstack'		=> esc_html( '<h3>ipstack API Access Key</h3>' .
 								'<p>Enter Your ipstack API Access Key Which you can get it by signing up for Free Plan from <a href="https://ipstack.com/signup/free" target="_blank">here</a>.
 								</p>','track-geolocation-of-users-using-contact-form-7' ),
 		'google'		=> esc_html( '<h3>Google Map Geolocation API Key</h3>' .
-								'<p>Get You Google Map API key from <a href="'.$google_api_link.'" target="_blank">here</a> and make sure "Maps Static API" is Enabled.
+								'<p>Get You Google Map API key from <a href="'.$cfgeo_google_api_link.'" target="_blank">here</a> and make sure "Maps Static API" is Enabled.
 								</p>','track-geolocation-of-users-using-contact-form-7' ),
 		'debug'			=> esc_html( '<h3>Debug Mode</h3>' .
 								'<p>Enabling the debug mode will help us to track any issue with the API.</p>','track-geolocation-of-users-using-contact-form-7' ),
@@ -243,15 +243,15 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 								'<p>Optional secret key for webhook authentication. This will be used to create a signature for webhook payloads.</p>','track-geolocation-of-users-using-contact-form-7' ),
 
 
-		'form_graph_url'=> $form_graph_url,
-		'google_api'	=> $google_api,
+		'form_graph_url'=> $cfgeo_form_graph_url,
+		'google_api'	=> $cfgeo_google_api,
 		'graph_color'	=> $cfgeo_graph_color,
-		'cntry_data'	=> $data_arr_to_str
+		'cntry_data'	=> $cfgeo_data_arr_to_str
 	);
 	wp_enqueue_script( 'wp-pointer' );
 	wp_enqueue_style( 'wp-pointer' );
 	wp_enqueue_script( CFGEO_PREFIX . '_spectrum_js' );
 	wp_enqueue_style( CFGEO_PREFIX . '_spectrum_css' );
 	wp_enqueue_style( CFGEO_PREFIX . '_admin_css' );
-	wp_localize_script( CFGEO_PREFIX . '_admin_js', 'translate_string_geo', $translation_array );
+	wp_localize_script( CFGEO_PREFIX . '_admin_js', 'translate_string_geo', $cfgeo_translation_array );
 	wp_enqueue_script( CFGEO_PREFIX . '_admin_js' );

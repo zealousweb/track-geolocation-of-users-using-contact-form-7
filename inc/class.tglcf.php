@@ -22,9 +22,9 @@ if ( !class_exists( 'CFGEO' ) ) {
 	 */
 	class CFGEO {
 
-		private static $_instance    = null;
+		private static $cfgeo_instance    = null;
 
-				static $setting_page = 'geolocation-setting';
+				static $cfgeo_setting_page = 'geolocation-setting';
 
 		var $admin = null,
 			$front = null,
@@ -32,10 +32,10 @@ if ( !class_exists( 'CFGEO' ) ) {
 
 		public static function instance() {
 
-			if ( is_null( self::$_instance ) )
-				self::$_instance = new self();
+			if ( is_null( self::$cfgeo_instance ) )
+				self::$cfgeo_instance = new self();
 
-			return self::$_instance;
+			return self::$cfgeo_instance;
 		}
 
 		function __construct() {
@@ -67,29 +67,29 @@ if ( !class_exists( 'CFGEO' ) ) {
 			global $wp_version;
 
 			# Set filter for plugin's languages directory
-			$CFGEO_lang_dir = dirname( CFGEO_PLUGIN_BASENAME ) . '/languages/';
-			$CFGEO_lang_dir = apply_filters( 'CFGEO_languages_directory', $CFGEO_lang_dir );
+			$cfgeo_lang_dir = dirname( CFGEO_PLUGIN_BASENAME ) . '/languages/';
+			$cfgeo_lang_dir = apply_filters( 'CFGEO_languages_directory', $cfgeo_lang_dir );
 
 			# Traditional WordPress plugin locale filter.
-			$get_locale = get_locale();
+			$cfgeo_get_locale = get_locale();
 
 			if ( $wp_version >= 4.7 ) {
-				$get_locale = get_user_locale();
+				$cfgeo_get_locale = get_user_locale();
 			}
 
 			# Traditional WordPress plugin locale filter
-			$locale = apply_filters( 'plugin_locale',  $get_locale, 'track-geolocation-of-users-using-contact-form-7' );
-			$mofile = sprintf( '%1$s-%2$s.mo', 'track-geolocation-of-users-using-contact-form-7', $locale );
+			$cfgeo_locale = apply_filters( 'plugin_locale',  $cfgeo_get_locale, 'track-geolocation-of-users-using-contact-form-7' );
+			$cfgeo_mofile = sprintf( '%1$s-%2$s.mo', 'track-geolocation-of-users-using-contact-form-7', $cfgeo_locale );
 
 			# Setup paths to current locale file
-			$mofile_global = WP_LANG_DIR . '/plugins/' . basename( CFGEO_DIR ) . '/' . $mofile;
+			$cfgeo_mofile_global = WP_LANG_DIR . '/plugins/' . basename( CFGEO_DIR ) . '/' . $cfgeo_mofile;
 
-			if ( file_exists( $mofile_global ) ) {
+			if ( file_exists( $cfgeo_mofile_global ) ) {
 				# Look in global /wp-content/languages/plugin-name folder
-				load_textdomain( 'track-geolocation-of-users-using-contact-form-7', $mofile_global );
+				load_textdomain( 'track-geolocation-of-users-using-contact-form-7', $cfgeo_mofile_global );
 			} else {
 				# Load the default language files
-				load_plugin_textdomain( 'track-geolocation-of-users-using-contact-form-7', false, $CFGEO_lang_dir );
+				load_plugin_textdomain( 'track-geolocation-of-users-using-contact-form-7', false, $cfgeo_lang_dir );
 			}
 		}
 
@@ -108,7 +108,7 @@ if ( !class_exists( 'CFGEO' ) ) {
 			 * Post Type: Geolocation cf7.
 			 */
 
-			$labels = array(
+			$cfgeo_labels = array(
 				'name' => esc_html__( 'Geolocation Details', 'track-geolocation-of-users-using-contact-form-7' ),
 				'singular_name' => esc_html__( 'Geolocation Detail', 'track-geolocation-of-users-using-contact-form-7' ),
 				'edit_item' => esc_html__( 'Edit Submission', 'track-geolocation-of-users-using-contact-form-7' ),
@@ -118,9 +118,9 @@ if ( !class_exists( 'CFGEO' ) ) {
 				'not_found_in_trash' => esc_html__( 'No Submissions Found in Trash', 'track-geolocation-of-users-using-contact-form-7' ),
 			);
 
-			$args = array(
+			$cfgeo_args = array(
 				'label' => esc_html__( 'Geolocation Details', 'track-geolocation-of-users-using-contact-form-7' ),
-				'labels' => $labels,
+				'labels' => $cfgeo_labels,
 				'description' => '',
 				'public' => false,
 				'publicly_queryable' => false,
@@ -145,7 +145,7 @@ if ( !class_exists( 'CFGEO' ) ) {
 				'supports' => array( 'title' ),
 			);
 
-			register_post_type( CFGEO_POST_TYPE, $args );
+			register_post_type( CFGEO_POST_TYPE, $cfgeo_args );
 		}
 
 		/**
@@ -181,7 +181,7 @@ if ( !class_exists( 'CFGEO' ) ) {
 					delete_option('cfgeo_activation_redirect');
 					if(!isset($_GET['activate-multi']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ))
 					{
-						wp_redirect( admin_url( 'admin.php?page=' . self::$setting_page ) );
+						wp_redirect( admin_url( 'admin.php?page=' . self::$cfgeo_setting_page ) );
 					}
 				}
 			}
