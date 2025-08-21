@@ -82,7 +82,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			
 			//Registers webhook settings
 			register_setting("cfgeo_webhook_api", "cfgeo_webhook_enabled");
-			register_setting("cfgeo_webhook_api", "cfgeo_webhook_urls");
+			register_setting("cfgeo_webhook_api", "cfgeo_webhook_urls", array($this, 'cfgeo_validate_webhook_urls'));
 			register_setting("cfgeo_webhook_api", "cfgeo_webhook_secret");
 
 			if( isset($_GET["tab"]) ){
@@ -1094,6 +1094,81 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 			}
 			
 			update_option('cfgeo_webhook_logs', $logs);
+		}
+
+		/**
+		 * [cfgeo_validate_webhook_urls Validate webhook URLs when webhook is enabled.]
+		 * @param  [string] $input [Webhook URLs input]
+		 * @return [string] [Validated input or error]
+		 */
+		function cfgeo_validate_webhook_urls($input) {
+			// Check if webhook is enabled
+			$webhook_enabled = isset($_POST['cfgeo_webhook_enabled']) ? $_POST['cfgeo_webhook_enabled'] : get_option('cfgeo_webhook_enabled');
+			
+			// If webhook is enabled, validate URLs
+			if ($webhook_enabled) {
+				// Trim and clean the input
+				$urls = array_filter(array_map('trim', explode("\n", $input)));
+				
+				// Check if any URLs are provided
+				if (empty($urls)) {
+					add_settings_error(
+						'cfgeo_webhook_urls',
+						'cfgeo_webhook_urls_error',
+						__('Webhook URLs are required when webhook is enabled. Please enter at least one webhook URL.', 'track-geolocation-of-users-using-contact-form-7'),
+						'error'
+					);
+					// Return the old value to prevent saving
+					return get_option('cfgeo_webhook_urls');
+				}
+				
+				// Validate each URL
+				$valid_urls = array();
+				$invalid_urls = array();
+				
+				foreach ($urls as $url) {
+					if (!empty($url)) {
+						if (filter_var($url, FILTER_VALIDATE_URL)) {
+							$valid_urls[] = $url;
+						} else {
+							$invalid_urls[] = $url;
+						}
+					}
+				}
+				
+				// If there are invalid URLs, show error
+				if (!empty($invalid_urls)) {
+					add_settings_error(
+						'cfgeo_webhook_urls',
+						'cfgeo_webhook_urls_error',
+						sprintf(
+							__('Invalid webhook URLs detected: %s. Please enter valid URLs.', 'track-geolocation-of-users-using-contact-form-7'),
+							implode(', ', $invalid_urls)
+						),
+						'error'
+					);
+					// Return the old value to prevent saving
+					return get_option('cfgeo_webhook_urls');
+				}
+				
+				// If no valid URLs, show error
+				if (empty($valid_urls)) {
+					add_settings_error(
+						'cfgeo_webhook_urls',
+						'cfgeo_webhook_urls_error',
+						__('No valid webhook URLs provided. Please enter at least one valid webhook URL.', 'track-geolocation-of-users-using-contact-form-7'),
+						'error'
+					);
+					// Return the old value to prevent saving
+					return get_option('cfgeo_webhook_urls');
+				}
+				
+				// Return the cleaned input
+				return implode("\n", $valid_urls);
+			}
+			
+			// If webhook is not enabled, allow empty URLs
+			return $input;
 		}
 
 
