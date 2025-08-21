@@ -83,6 +83,21 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		        return;
 		    }
 
+		    // Check if there are any cfgeozw_data posts available
+		    $cfgeo_data_posts = get_posts(
+				array(
+					'post_type'        => 'cfgeozw_data',
+					'post_status'      => 'publish',
+					'suppress_filters' => false,
+					'posts_per_page'   => 1
+				)
+			);
+
+		    // If no cfgeozw_data posts exist, don't show the filters
+		    if ( empty( $cfgeo_data_posts ) ) {
+		        return;
+		    }
+
 		    $cfgeo_posts = get_posts(
 				array(
 					'post_type'        => 'wpcf7_contact_form',
