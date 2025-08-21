@@ -361,9 +361,64 @@
 			loadWebhookLogs();
 		}
 
+		// Clear webhook logs functionality
+		if ($('#clear-webhook-logs').length && typeof cfgeo_ajax !== 'undefined') {
+			$('#clear-webhook-logs').on('click', function() {
+				if (confirm('Are you sure you want to clear all webhook logs? This action cannot be undone.')) {
+					var button = $(this);
+					var originalText = button.text();
+					
+					button.prop('disabled', true).text('Clearing...');
+					
+					$.ajax({
+						url: ajaxurl,
+						type: 'POST',
+						data: {
+							action: 'cfgeo_clear_webhook_logs',
+							nonce: cfgeo_ajax.webhook_logs_nonce || cfgeo_ajax.nonce
+						},
+						success: function(response) {
+							if (response && response.success) {
+								// Clear the logs display
+								$('#webhook-logs').html('<p class="description">No webhook logs available yet.</p>');
+								
+								// Disable the clear button since logs are now empty
+								$('#clear-webhook-logs').prop('disabled', true);
+								
+								// Show success message
+								var message = response.data && response.data.message ? response.data.message : 'Webhook logs cleared successfully.';
+								$('#webhook-logs').before(
+									'<div class="notice notice-success" style="margin-bottom: 10px;"><p>' + message + '</p></div>'
+								);
+								
+								// Remove the notice after 3 seconds
+								setTimeout(function() {
+									$('#webhook-logs').prev('.notice').fadeOut();
+								}, 3000);
+							} else {
+								var message = response && response.data && response.data.message ? response.data.message : 'Failed to clear webhook logs.';
+								$('#webhook-logs').before(
+									'<div class="notice notice-error" style="margin-bottom: 10px;"><p>' + message + '</p></div>'
+								);
+							}
+						},
+						error: function() {
+							$('#webhook-logs').before(
+								'<div class="notice notice-error" style="margin-bottom: 10px;"><p>An error occurred while clearing webhook logs.</p></div>'
+							);
+						},
+						complete: function() {
+							button.prop('disabled', false).text(originalText);
+						}
+					});
+				}
+			});
+		}
+
 		function loadWebhookLogs() {
 			if (typeof cfgeo_ajax === 'undefined') {
 				$('#webhook-logs').html('<p class="description">Unable to load webhook logs - AJAX not available.</p>');
+				$('#clear-webhook-logs').prop('disabled', true);
 				return;
 			}
 			
@@ -378,6 +433,9 @@
 					if (response && response.success && response.data && response.data.logs) {
 						var logsHtml = '';
 						if (response.data.logs.length > 0) {
+							// Enable clear button when logs exist
+							$('#clear-webhook-logs').prop('disabled', false);
+							
 							response.data.logs.forEach(function(log) {
 								var statusClass = log.success ? 'success' : 'error';
 								var statusText = log.success ? 'Success' : 'Failed';
@@ -388,15 +446,19 @@
 								logsHtml += '</div>';
 							});
 						} else {
+							// Disable clear button when no logs exist
+							$('#clear-webhook-logs').prop('disabled', true);
 							logsHtml = '<p class="description">No webhook logs available yet.</p>';
 						}
 						$('#webhook-logs').html(logsHtml);
 					} else {
 						$('#webhook-logs').html('<p class="description">Unable to load webhook logs - invalid response format.</p>');
+						$('#clear-webhook-logs').prop('disabled', true);
 					}
 				},
 				error: function() {
 					$('#webhook-logs').html('<p class="description">Unable to load webhook logs.</p>');
+					$('#clear-webhook-logs').prop('disabled', true);
 				}
 			});
 		}

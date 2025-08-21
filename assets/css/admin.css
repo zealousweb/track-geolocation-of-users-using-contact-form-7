@@ -197,6 +197,16 @@
 	margin: 0;
 }
 
+/* Clear webhook logs button */
+#clear-webhook-logs {
+	margin-bottom: 10px;
+}
+
+#clear-webhook-logs:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
 /* Webhook Settings Fields */
 .cfgeo-webhook-settings textarea {
 	width: 100%;

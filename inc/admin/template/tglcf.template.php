@@ -211,6 +211,9 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		echo '<div class="cfgeo-webhook-logs">';
 		echo '<h4>' . esc_html__( 'Webhook Logs', 'track-geolocation-of-users-using-contact-form-7' ) . '</h4>';
 		echo '<p>' . esc_html__( 'Recent webhook delivery attempts:', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
+		echo '<div style="margin-bottom: 10px;">';
+		echo '<button type="button" id="clear-webhook-logs" class="button button-secondary">' . esc_html__( 'Clear Logs', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
+		echo '</div>';
 		echo '<div id="webhook-logs" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #ddd;">';
 		echo '<p class="description">' . esc_html__( 'No webhook logs available yet.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
 		echo '</div>';

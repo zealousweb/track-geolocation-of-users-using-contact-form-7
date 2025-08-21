@@ -35,8 +35,9 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			add_action( 'wp_ajax_nopriv_cfgeo_filter_submissions',  array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
 			
 			// Add AJAX handlers for webhook functionality
-			add_action( 'wp_ajax_cfgeo_test_webhook',               array( $this, 'action__cfgeo_ajax_test_webhook' ) );
-			add_action( 'wp_ajax_cfgeo_get_webhook_logs',           array( $this, 'action__cfgeo_ajax_get_webhook_logs' ) );
+					add_action( 'wp_ajax_cfgeo_test_webhook',               array( $this, 'action__cfgeo_ajax_test_webhook' ) );
+		add_action( 'wp_ajax_cfgeo_get_webhook_logs',           array( $this, 'action__cfgeo_ajax_get_webhook_logs' ) );
+		add_action( 'wp_ajax_cfgeo_clear_webhook_logs',         array( $this, 'action__cfgeo_ajax_clear_webhook_logs' ) );
 		}
 
 		/*
@@ -1146,6 +1147,40 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 			wp_send_json_success( array(
 				'logs' => $logs
+			) );
+		}
+
+		/**
+		 * AJAX handler for clearing webhook logs
+		 *
+		 * @method action__cfgeo_ajax_clear_webhook_logs
+		 */
+		function action__cfgeo_ajax_clear_webhook_logs() {
+			// Verify nonce - check both possible nonce names
+			$nonce_valid = false;
+			if (isset($_POST['nonce'])) {
+				$nonce_valid = wp_verify_nonce($_POST['nonce'], 'cfgeo_filter_nonce') || 
+							   wp_verify_nonce($_POST['nonce'], 'cfgeo_webhook_logs_nonce');
+			}
+			
+			if (!$nonce_valid) {
+				wp_send_json_error(array(
+					'message' => __('Security check failed. Please refresh the page and try again.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check permissions
+			if ( !current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(array(
+					'message' => __('Insufficient permissions to perform this action.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Clear the webhook logs
+			delete_option('cfgeo_webhook_logs');
+
+			wp_send_json_success( array(
+				'message' => __('Webhook logs have been cleared successfully.', 'track-geolocation-of-users-using-contact-form-7')
 			) );
 		}
 	}
