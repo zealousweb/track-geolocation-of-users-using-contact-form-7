@@ -948,7 +948,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		{
 			$option = get_option('cfgeo_webhook_urls');
 			?>
-			<textarea name="cfgeo_webhook_urls" id="cfgeo_webhook_urls" rows="5" cols="50" placeholder="<?php esc_attr_e('https://your-webhook-url.com/webhook', 'track-geolocation-of-users-using-contact-form-7'); ?>"><?php echo esc_textarea($option); ?></textarea>
+			<textarea class="cfgeo-textarea" name="cfgeo_webhook_urls" id="cfgeo_webhook_urls" placeholder="<?php esc_attr_e('https://your-webhook-url.com/webhook', 'track-geolocation-of-users-using-contact-form-7'); ?>"><?php echo esc_textarea($option); ?></textarea>
 			<p class="description"><?php esc_html_e('Enter one webhook URL per line. Multiple webhooks are supported.', 'track-geolocation-of-users-using-contact-form-7'); ?></p>
 			<?php
 		}
