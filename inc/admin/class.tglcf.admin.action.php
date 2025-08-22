@@ -200,7 +200,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 
 		function action__cfgeo_init() {
-			wp_register_style( CFGEO_PREFIX . '_admin_css', CFGEO_URL . 'assets/css/admin.min.css', array(), CFGEO_VERSION );
+			wp_register_style( CFGEO_PREFIX . '_admin_css', CFGEO_URL . 'assets/css/admin.css', array(), CFGEO_VERSION );
 			wp_register_style( CFGEO_PREFIX . '_spectrum_css', CFGEO_URL . 'assets/css/spectrum.min.css', array(), CFGEO_VERSION );
 			wp_register_script( CFGEO_PREFIX . '_spectrum_js', CFGEO_URL . 'assets/js/spectrum.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
 			wp_register_script( CFGEO_PREFIX . '_admin_js', CFGEO_URL . 'assets/js/admin.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
