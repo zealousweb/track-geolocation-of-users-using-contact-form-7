@@ -123,6 +123,7 @@
     display: flex;
     flex-wrap: wrap;
     float: left;
+	justify-content: space-between;
 }
 .cfgeo-advanced-filters label {
     display: inline-block;
@@ -158,6 +159,8 @@
     margin-bottom: 10px;
     display: flex;
     flex-wrap: wrap;
+	align-items: center;
+	width: 33.33%;
 }
 .cfgeo-filter-row:last-child {
     margin-bottom: 0;
@@ -429,4 +432,47 @@
     line-height: 1 !important;
     width: 100% !important;
     max-width: 500px !important;
+}
+
+.cfgeo-main-layout .nav-tab-wrapper {
+	border-bottom: 1px solid #c3c4c7 !important;
+    margin: 0 !important;
+    padding-top: 9px !important;
+    padding-bottom: 0 !important;
+    line-height: inherit !important;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.cfgeo-main-layout .nav-tab-wrapper .nav-tab {
+	background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    color: #285064 !important;
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    font-family: "Poppins", sans-serif !important;
+    padding: 5px 5px 15px 5px !important;
+    margin-right: 12px !important;
+    margin-left: 0 !important;
+}
+
+
+.cfgeo-main-layout .nav-tab-wrapper .nav-tab-active {
+    border-bottom: 3px solid #11AAB4 !important;
+}
+
+
+@media (max-width: 720px) and (orientation: portrait) {
+    .cfgeo-main-layout .nav-tab-wrapper .nav-tab {
+        margin: 0  !important;
+        padding: 9px !important;
+    }
+	.cfgeo-main-layout .form-table td,
+	.cfgeo-main-layout .form-table th {
+		width: 100% !important;
+	}
+	.cfgeo-main-layout .form-table tr {
+		flex-wrap: wrap;
+	}
 }
