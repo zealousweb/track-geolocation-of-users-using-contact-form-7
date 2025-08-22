@@ -178,8 +178,10 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			// Date range filters
 			echo '<div class="cfgeo-filter-row">';
 			echo '<label class="cfgeo-label">' . esc_html__( 'Date Range:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<input class="cfgeo-input-date" type="date" name="date-from" id="date-from" value="' . esc_attr( $cfgeo_date_from ) . '" placeholder="' . esc_attr__( 'From', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px; margin-right: 5px;">';
-			echo '<input class="cfgeo-input-date" type="date" name="date-to" id="date-to" value="' . esc_attr( $cfgeo_date_to ) . '" placeholder="' . esc_attr__( 'To', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px;">';
+			echo '<div class="cfgeo-main-date">';
+			echo '<input class="cfgeo-input-date" type="date" name="date-from" id="date-from" value="' . esc_attr( $cfgeo_date_from ) . '" placeholder="' . esc_attr__( 'From', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '<input class="cfgeo-input-date" type="date" name="date-to" id="date-to" value="' . esc_attr( $cfgeo_date_to ) . '" placeholder="' . esc_attr__( 'To', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '</div>';
 			echo '</div>';
 
 			// Filter and Export buttons
