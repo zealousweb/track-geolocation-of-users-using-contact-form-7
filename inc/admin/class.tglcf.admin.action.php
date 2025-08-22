@@ -132,14 +132,14 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			
 			// Search input
 			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="search-term">' . esc_html__( 'Search:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<input type="text" name="search-term" id="search-term" value="' . esc_attr( $cfgeo_search_term ) . '" placeholder="' . esc_attr__( 'Search by any field...', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 200px;">';
+			echo '<label class="cfgeo-label" for="search-term">' . esc_html__( 'Search:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<input class="cfgeo-input-text" type="text" name="search-term" id="search-term" value="' . esc_attr( $cfgeo_search_term ) . '" placeholder="' . esc_attr__( 'Search by any field...', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 200px;">';
 			echo '</div>';
 
 			// Form filter
 			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="form-id">' . esc_html__( 'Form:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<select name="form-id" id="form-id" style="width: 200px;">';
+			echo '<label class="cfgeo-label" for="form-id">' . esc_html__( 'Form:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select class="cfgeo-input-text cfgeo-input-select" name="form-id" id="form-id">';
 			echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 			if ( !empty( $cfgeo_posts ) ) {
 			foreach ( $cfgeo_posts as $cfgeo_post ) {
@@ -151,8 +151,8 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 			// Country filter
 			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="country-filter">' . esc_html__( 'Country:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<select name="country-filter" id="country-filter" style="width: 200px;">';
+			echo '<label class="cfgeo-label" class="cfgeo-label" for="country-filter">' . esc_html__( 'Country:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select class="cfgeo-input-text cfgeo-input-select" name="country-filter" id="country-filter">';
 			echo '<option value="">' . esc_html__( 'All Countries', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 			if ( !empty( $cfgeo_countries ) ) {
 				foreach ( $cfgeo_countries as $cfgeo_country ) {
@@ -164,8 +164,8 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 			// City filter
 			echo '<div class="cfgeo-filter-row">';
-			echo '<label for="city-filter">' . esc_html__( 'City:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<select name="city-filter" id="city-filter" style="width: 200px;">';
+			echo '<label class="cfgeo-label" for="city-filter">' . esc_html__( 'City:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select class="cfgeo-input-text cfgeo-input-select" name="city-filter" id="city-filter">';
 			echo '<option value="">' . esc_html__( 'All Cities', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 			if ( !empty( $cfgeo_cities ) ) {
 				foreach ( $cfgeo_cities as $cfgeo_city ) {
@@ -177,15 +177,15 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 			// Date range filters
 			echo '<div class="cfgeo-filter-row">';
-			echo '<label>' . esc_html__( 'Date Range:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
-			echo '<input type="date" name="date-from" id="date-from" value="' . esc_attr( $cfgeo_date_from ) . '" placeholder="' . esc_attr__( 'From', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px; margin-right: 5px;">';
-			echo '<input type="date" name="date-to" id="date-to" value="' . esc_attr( $cfgeo_date_to ) . '" placeholder="' . esc_attr__( 'To', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px;">';
+			echo '<label class="cfgeo-label">' . esc_html__( 'Date Range:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<input class="cfgeo-input-date" type="date" name="date-from" id="date-from" value="' . esc_attr( $cfgeo_date_from ) . '" placeholder="' . esc_attr__( 'From', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px; margin-right: 5px;">';
+			echo '<input class="cfgeo-input-date" type="date" name="date-to" id="date-to" value="' . esc_attr( $cfgeo_date_to ) . '" placeholder="' . esc_attr__( 'To', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 150px;">';
 			echo '</div>';
 
 			// Filter and Export buttons
 			echo '<div class="cfgeo-filter-buttons">';
-			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="' . esc_attr__( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
-			echo '<a href="#" class="button cfgeo-clear-filters">' . esc_html__( 'Clear Filters', 'track-geolocation-of-users-using-contact-form-7' ) . '</a>';
+			echo '<input type="submit" id="export_csv" name="export_csv" class="cfgeo-submit-btn" value="' . esc_attr__( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+ 			echo ' <button class="cfgeo-submit-btn cfgeo-clear-filters">' . esc_html__( ' Clear Filters', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
 			echo '</div>';
 
 			echo '</div>';
@@ -696,7 +696,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				if ( !empty( $meta['_form_id'] ) ) {
 					echo '<tr class="form-field">' .
 						'<th scope="row">' .
-							'<label for="hcf_author">' . esc_html( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+							'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 						'</th>' .
 						'<td>' .
 							(
@@ -720,7 +720,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 							echo '<tr class="form-field">' .
 									'<th scope="row">' .
-										'<label for="hcf_author">' . esc_html( sprintf( '%s', ucwords($rmv_cfgeo) ), 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+										'<label class="cfgeo-label" for="hcf_author">' . esc_html( sprintf( '%s', ucwords($rmv_cfgeo) ), 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 									'</th>' .
 									'<td>' . esc_html( $value ) .
 									'</td>' .
@@ -731,7 +731,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if (get_post_meta( $post->ID, 'cfgeo-debug-ipstack', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . esc_html( 'Debug ipstack', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Debug ipstack', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-ipstack', true ) ) .
 								'</td>' .
@@ -741,7 +741,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if (get_post_meta( $post->ID, 'cfgeo-debug-ipapi', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . esc_html( 'Debug ipapi', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Debug ipapi', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-ipapi', true ) ) .
 								'</td>' .
@@ -751,7 +751,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if (get_post_meta( $post->ID, 'cfgeo-debug-keycdn', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . esc_html( 'Debug Keycdn', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Debug Keycdn', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-keycdn', true ) ) .
 								'</td>' .
@@ -943,7 +943,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					$html .= '<tr id="post-' . $post->ID . '" class="iedit author-self level-0 post-' . $post->ID . ' type-' . CFGEO_POST_TYPE . ' status-publish hentry">';
 					
 					// Checkbox
-					$html .= '<td class="check-column"><input type="checkbox" name="post[]" value="' . $post->ID . '"></td>';
+					$html .= '<td class="check-column"><input class="cfgeo-checkbox" type="checkbox" name="post[]" value="' . $post->ID . '"></td>';
 					
 					// Title
 					$title = get_the_title( $post->ID );

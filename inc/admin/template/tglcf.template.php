@@ -54,7 +54,13 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 			// all the add_settings_field callbacks is displayed here
 			do_settings_sections(self::$cfgeo_setting_page);
 			// Add the submit button to serialize the options
-			submit_button();
+			submit_button( 
+		   		'Save Changes', 
+		    	'cfgeo-submit-btn', 
+		    	'submit', 
+		    	true, 
+			);
+
 		}else{
 			//add_settings_section callback is displayed here. For every new section we need to call settings_fields.
 			settings_fields("cfgeo_googleapi");
@@ -63,11 +69,21 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 			if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 				if($_GET["tab"] == "cfgeo-setting" || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )){
 					// Add the submit button to serialize the options
-					submit_button();
+					submit_button( 
+					    'Save Changes', 
+					    'cfgeo-submit-btn', 
+					    'submit', 
+					    true, 
+					);
 				}
 			}else{
 				// Add the submit button to serialize the options
-				submit_button();
+				submit_button( 
+				    'Save Changes', 
+				    'cfgeo-submit-btn', 
+				    'submit', 
+				    true, 
+				);
 			}
 		}
 	?>
@@ -108,7 +124,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 			return;
 		}
 		$cfgeo_selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' )) ? sanitize_text_field($_GET['form-id']) : '' ;
-		echo '<select name="form-id" id="form-id-graph">';
+		echo '<select class="cfgeo-input-text cfgeo-input-select" name="form-id" id="form-id-graph">';
 		echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
 		foreach ( $cfgeo_posts as $cfgeo_post ) {
 			echo '<option value="' . esc_attr( $cfgeo_post->ID ) . '" ' . selected( $cfgeo_selected, $cfgeo_post->ID, false ) . '>' . esc_html( $cfgeo_post->post_title ) . '</option>';
@@ -140,51 +156,51 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 			<tbody>
 				<tr>
 					<td>'. esc_html__('To add latitude/longitude, country, state, city.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add latitude/longitude, country, state, city & Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation lat-long country state city gmap]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation lat-long country state city gmap]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just latitude/longitude.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td>
-						<input type="text" value="[geolocation lat-long]" style="width: 100%;color: #000;" disabled="">
+						<input class="cfgeo-input-text" type="text" value="[geolocation lat-long]" style="width: 100%;color: #000;" disabled="">
 					</td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just latitude/longitude without label.','track-geolocation-of-users-using-contact-form-7').'</td>
 					<td>
-						<input type="text" value="[geolocation lat-long label="no"]" style="width: 100%;color: #000;" disabled="">
+						<input class="cfgeo-input-text" type="text" value="[geolocation lat-long label="no"]" style="width: 100%;color: #000;" disabled="">
 					</td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just country.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation country]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation country]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just Country without label.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation country label="no"]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation country label="no"]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just state.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation state]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation state]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just State without label.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation state label="no"]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation state label="no"]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just city.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation city]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation city]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just City without label.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation city label="no"]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation city label="no"]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 				<tr>
 					<td>'. esc_html__('To add just Google map static image.','track-geolocation-of-users-using-contact-form-7').'</td>
-					<td><input type="text" value="[geolocation gmap]" style="width: 100%;color: #000;" disabled=""></td>
+					<td><input class="cfgeo-input-text" type="text" value="[geolocation gmap]" style="width: 100%;color: #000;" disabled=""></td>
 				</tr>
 			</tbody>
 			<tfoot>
@@ -204,7 +220,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		echo '<div class="cfgeo-webhook-test">';
 		echo '<h4>' . esc_html__( 'Test Webhook', 'track-geolocation-of-users-using-contact-form-7' ) . '</h4>';
 		echo '<p>' . esc_html__( 'Click the button below to test your webhook configuration with sample data:', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
-		echo '<button type="button" id="test-webhook" class="button button-secondary">' . esc_html__( 'Test Webhook', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
+		echo '<button type="button" id="test-webhook" class="cfgeo-submit-btn">' . esc_html__( 'Test Webhook', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
 		echo '<div id="webhook-test-result" style="margin-top: 10px; display: none;"></div>';
 		echo '</div>';
 		
@@ -212,7 +228,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 		echo '<h4>' . esc_html__( 'Webhook Logs', 'track-geolocation-of-users-using-contact-form-7' ) . '</h4>';
 		echo '<p>' . esc_html__( 'Recent webhook delivery attempts:', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';
 		echo '<div style="margin-bottom: 10px;">';
-		echo '<button type="button" id="clear-webhook-logs" class="button button-secondary">' . esc_html__( 'Clear Logs', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
+		echo '<button type="button" id="clear-webhook-logs" class="cfgeo-submit-btn">' . esc_html__( 'Clear Logs', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
 		echo '</div>';
 		echo '<div id="webhook-logs" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #ddd;">';
 		echo '<p class="description">' . esc_html__( 'No webhook logs available yet.', 'track-geolocation-of-users-using-contact-form-7' ) . '</p>';

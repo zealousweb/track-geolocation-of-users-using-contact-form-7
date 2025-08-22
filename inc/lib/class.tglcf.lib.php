@@ -92,26 +92,26 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 					//Add a new section to a settings page.
 					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$cfgeo_setting_page);
 					//Add a new field to a section of a settings page.
-					add_settings_field("cfgeo_debug_mode",     __("<label>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$cfgeo_setting_page, "cfgeo_googleapi");
-					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
-					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
-					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
+					add_settings_field("cfgeo_debug_mode",     __("<label class='cfgeo-label'>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$cfgeo_setting_page, "cfgeo_googleapi");
+					add_settings_field("cfgeo_color_picker",   __("<label class='cfgeo-label'>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
+					add_settings_field("cfgeo_google_api_key", __("<label class='cfgeo-label'>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
+					add_settings_field("cfgeo_ipstack_access", __("<label class='cfgeo-label'>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
 				}elseif($_GET["tab"] == "cfgeo-webhook-api" ){
 					//Add a new section to a settings page for webhook API.
 					add_settings_section("cfgeo_webhook_api", "", array( $this, 'cfgeo_display_webhook_header_content'), self::$cfgeo_setting_page);
 					//Add webhook settings fields
-					add_settings_field("cfgeo_webhook_enabled", __("<label>Enable Webhook API </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-enabled></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_enabled_data'), self::$cfgeo_setting_page, "cfgeo_webhook_api");
-					add_settings_field("cfgeo_webhook_urls", __("<label>Webhook URLs </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-urls></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_urls_data'), self::$cfgeo_setting_page, "cfgeo_webhook_api");
-					add_settings_field("cfgeo_webhook_secret", __("<label>Webhook Secret Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-secret></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_webhook_api", array('cfgeo_webhook_secret'));
+					add_settings_field("cfgeo_webhook_enabled", __("<label class='cfgeo-label'>Enable Webhook API </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-enabled></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_enabled_data'), self::$cfgeo_setting_page, "cfgeo_webhook_api");
+					add_settings_field("cfgeo_webhook_urls", __("<label class='cfgeo-label'>Webhook URLs </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-urls></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_webhook_urls_data'), self::$cfgeo_setting_page, "cfgeo_webhook_api");
+					add_settings_field("cfgeo_webhook_secret", __("<label class='cfgeo-label'>Webhook Secret Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-webhook-secret></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_webhook_api", array('cfgeo_webhook_secret'));
 				}
 			}else{
 					//Add a new section to a settings page.
 					add_settings_section("cfgeo_googleapi", "", array( $this, 'cfgeo_display_header_content'), self::$cfgeo_setting_page);
 					//Add a new field to a section of a settings page.
-					add_settings_field("cfgeo_debug_mode",     __("<label>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$cfgeo_setting_page, "cfgeo_googleapi");
-					add_settings_field("cfgeo_color_picker",   __("<label>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
-					add_settings_field("cfgeo_google_api_key", __("<label>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
-					add_settings_field("cfgeo_ipstack_access", __("<label>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
+					add_settings_field("cfgeo_debug_mode",     __("<label class='cfgeo-label'>Enable Debug Mode </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-debug></span>", 'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_debug_data'), self::$cfgeo_setting_page, "cfgeo_googleapi");
+					add_settings_field("cfgeo_color_picker",   __("<label class='cfgeo-label'>Select Color of the Graph </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-color-graph></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_color_picker'));
+					add_settings_field("cfgeo_google_api_key", __("<label class='cfgeo-label'>Google Map API Key </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-google></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_google_api_key'));
+					add_settings_field("cfgeo_ipstack_access", __("<label class='cfgeo-label'>Access Token For IPstack </label><span class=cfgeo-tooltip hide-if-no-js id=cfgeo-ipstack></span>",'track-geolocation-of-users-using-contact-form-7'), array( $this, 'cfgeo_display_setting_field_data'), self::$cfgeo_setting_page, "cfgeo_googleapi", array('cfgeo_ipstack_access'));
 			}
 		}
 
@@ -489,7 +489,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		{
 			//id and name of form element should be same as the setting name.
 			?>
-			<input type="checkbox" name="cfgeo_debug_mode" id="cfgeo_debug_mode" value="1" <?php checked( 1, get_option('cfgeo_debug_mode'), true ); ?> />
+			<input type="checkbox" class="cfgeo-checkbox" name="cfgeo_debug_mode" id="cfgeo_debug_mode" value="1" <?php checked( 1, get_option('cfgeo_debug_mode'), true ); ?> />
 			<?php
 		}
 
@@ -502,7 +502,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 		{
 			$option = get_option($args[0]);
 			//id and name of form element should be same as the setting name.
-			echo '<input type="text" name="' . esc_attr( $args[0] ) . '" id="' . esc_attr( $args[0] ) . '" value="' . esc_attr( $option ) . '" class="' . esc_attr( $args[0] ) . '" size="50" />';
+			echo '<input class="cfgeo-input-text" type="text" name="' . esc_attr( $args[0] ) . '" id="' . esc_attr( $args[0] ) . '" value="' . esc_attr( $option ) . '" class="' . esc_attr( $args[0] ) . '" size="50" />';
 		}
 
 		/**
