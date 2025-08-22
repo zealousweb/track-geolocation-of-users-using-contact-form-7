@@ -160,7 +160,11 @@
     flex-wrap: wrap;
 	align-items: center;
 	width: 31%;
-    padding-right: 20px;
+    padding-right: 15px;
+}
+
+.cfgeo-filter-row .cfgeo-label {
+	width: 100%;
 }
 .cfgeo-filter-row:last-child {
     margin-bottom: 0;
@@ -375,6 +379,12 @@
     max-width: 500px !important;
 }
 
+.cfgeo-main-date {
+	display: flex;
+	align-items: center;
+	width: 100%;
+}
+
 .cfgeo-input-text.spectrum.with-add-on {
 	padding-left: 55px !important;
 }
@@ -385,6 +395,7 @@
     font-family: "Poppins", sans-serif !important;
     line-height: 1.6 !important;
     color: #285064 !important;
+	padding-bottom: 10px !important;
 }
 
 .cfgeo-input-select {
@@ -406,7 +417,7 @@
     cursor: pointer !important;
 }
 
-.cfgeo-submit-btn.button:hover {
+.cfgeo-submit-btn:hover {
     background-color: #0074A2 !important;
     color: #FFFFFF !important;
 }
@@ -430,7 +441,7 @@
     font-weight: 400 !important;
     font-size: 16px !important;
     font-family: "Poppins", sans-serif !important;
-    line-height: 1 !important;
+    line-height: 1.4 !important;
     width: 100% !important;
     max-width: 500px !important;
 }
@@ -475,5 +486,9 @@
 	}
 	.cfgeo-main-layout .form-table tr {
 		flex-wrap: wrap;
+	}
+	.cfgeo-filter-row {
+		width: 100%;
+		padding-right: 0;
 	}
 }
