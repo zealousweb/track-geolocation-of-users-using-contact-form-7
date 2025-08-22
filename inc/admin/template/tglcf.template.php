@@ -35,8 +35,7 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 	}
 }
 ?>
-
-<div class="wrap">
+<div class="wrap cfgeo-main-layout">
 	<div id="icon-options-general" class="icon32"></div>
 	<h2><?php echo esc_html__( self::$cfgeo_activation_menuname, 'track-geolocation-of-users-using-contact-form-7' ); ?></h2>
 	<h2 class="nav-tab-wrapper">
