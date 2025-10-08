@@ -20,7 +20,7 @@ jobs:
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-          SLUG: abandoned-contact-form-7
+          SLUG: track-geolocation-of-users-using-contact-form-7
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
