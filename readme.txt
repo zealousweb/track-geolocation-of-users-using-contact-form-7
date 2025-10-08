@@ -18,7 +18,9 @@ Track Geolocation Of Users Using Contact Form 7 allows you to get geolocation in
 Track Geolocation Of Users Using Contact Form 7 allows you to get geolocation information with their form submission. This will help you know better from where the visitor has submitted the form.
 
 = Features of Track Geolocation Of Users Using Contact Form 7 =
-
+* Advanced Filtering & Search - Quickly locate form submissions with filters for Country, City, and Submission Date.
+* Custom Webhook Integrations - Automate workflows by sending geolocation data to external platforms.
+* Multi-Language Compatibility - The plugin automatically translates data.
 * Get Geolocation details including city,state,country,zipcode,latitude/longitude.
 * Send all this information including a static google map image in the mail with a simple shortcode.
 * Form Specific Visual chart to get to know from where the Visitors become more.
