@@ -2,6 +2,18 @@
 	"use strict";
 
 	jQuery(document).ready( function($) {
+		// Debug: Check if cfgeo_ajax is available
+		console.log('CFGEO Debug: cfgeo_ajax available:', typeof cfgeo_ajax !== 'undefined');
+		if (typeof cfgeo_ajax !== 'undefined') {
+			console.log('CFGEO Debug: cfgeo_ajax data:', cfgeo_ajax);
+		} else {
+			console.log('CFGEO Debug: cfgeo_ajax not available, some features may be limited');
+		}
+		
+		// Debug: Check if we're on the CFGEO page
+		console.log('CFGEO Debug: Advanced filters container found:', $('.cfgeo-advanced-filters').length);
+			// Initialize spectrum color picker if available
+	if (jQuery.fn.spectrum) {
 		jQuery('#cfgeo_color_picker').spectrum({
 			type: "component",
 			showPalette: false,
@@ -21,15 +33,21 @@
 				}
 			}
 		});
+	} else {
+		console.log('CFGEO Debug: Spectrum plugin not available, skipping color picker initialization');
+	}
 
 		jQuery('.setting-geolocation input#submit').click( function() {
-			var color_val = jQuery(".cfgeo_color_picker").val();
-			if(jQuery( ".cfgeo_color_picker" ).hasClass( "validation-error-geo" ) || color_val == null || color_val == ''){
-				jQuery(".cfgeo_color_picker").addClass('validation-error-geo');
-				return false;
-			}else if(color_val.length != 7){
-				jQuery(".cfgeo_color_picker").addClass('validation-error-geo');
-				return false;
+			// Only validate color picker if spectrum is available and color picker exists on current tab
+			if (jQuery.fn.spectrum && jQuery(".cfgeo_color_picker").length > 0) {
+				var color_val = jQuery(".cfgeo_color_picker").val();
+				if(jQuery( ".cfgeo_color_picker" ).hasClass( "validation-error-geo" ) || color_val == null || color_val == ''){
+					jQuery(".cfgeo_color_picker").addClass('validation-error-geo');
+					return false;
+				}else if(color_val.length != 7){
+					jQuery(".cfgeo_color_picker").addClass('validation-error-geo');
+					return false;
+				}
 			}
 		});
 
@@ -76,6 +94,374 @@
 				position: 'left center',
 			} ).pointer('open');
 		});
+
+		// Webhook tooltips
+		jQuery( '#cfgeo-webhook-enabled' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-enabled' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_enabled,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+		jQuery( '#cfgeo-webhook-urls' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-urls' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_urls,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+		jQuery( '#cfgeo-webhook-secret' ).on( 'mouseenter click', function() {
+			jQuery( 'body .wp-pointer-buttons .close' ).trigger( 'click' );
+			jQuery( '#cfgeo-webhook-secret' ).pointer({
+				pointerClass: 'wp-pointer cfgeo-pointer',
+				content: translate_string_geo.webhook_secret,
+				position: 'left center',
+			} ).pointer('open');
+		});
+
+
+
+
+
+		// Advanced Filter JavaScript for CFGEO Admin Panel
+		// Handles AJAX filtering, debouncing, pagination, and sorting
+		
+		var filterTimeout;
+		var isLoading = false;
+
+		// Function to perform AJAX filtering
+		function performAjaxFilter() {
+			console.log('performAjaxFilter called');
+			if (isLoading) {
+				console.log('Already loading, skipping');
+				return;
+			}
+			
+			// Check if we're on the correct page
+			if (!$('.cfgeo-advanced-filters').length) {
+				console.log('Not on CFGEO page, skipping');
+				return;
+			}
+			
+			isLoading = true;
+			
+			// Show loading states
+			$('.cfgeo-advanced-filters').addClass('loading');
+			$('.cfgeo-loading').show();
+			$('.cfgeo-filter-row input, .cfgeo-filter-row select').prop('disabled', true);
+			$('.wp-list-table tbody').html('<tr><td colspan="8" style="text-align: center; padding: 20px;"><div class="spinner is-active"></div> Loading...</td></tr>');
+			
+			var filterData = {
+				action: 'cfgeo_filter_submissions',
+				nonce: cfgeo_ajax.nonce,
+				form_id: $('#form-id').val() || 'all',
+				country_filter: $('#country-filter').val() || '',
+				city_filter: $('#city-filter').val() || '',
+				date_from: $('#date-from').val() || '',
+				date_to: $('#date-to').val() || '',
+				search_term: $('#search-term').val() || '',
+				orderby: $('input[name="orderby"]').val() || 'date',
+				order: $('input[name="order"]').val() || 'DESC',
+				paged: $('input[name="paged"]').val() || '1'
+			};
+
+			console.log('Sending AJAX request with data:', filterData);
+			$.ajax({
+				url: ajaxurl,
+				type: 'POST',
+				data: filterData,
+				success: function(response) {
+					if (response.success) {
+						// Update the table body
+						$('.wp-list-table tbody').html(response.data.html);
+						
+						// Update pagination
+						if (response.data.pagination) {
+							$('.tablenav-pages').html(response.data.pagination);
+						} else {
+							$('.tablenav-pages').html('');
+						}
+						
+						// Update filter count
+						$('.cfgeo-filter-count').remove();
+						if (response.data.total > 0) {
+							var filterInfo = $('<div class="cfgeo-filter-count">Showing ' + response.data.total + ' submission(s)</div>');
+							$('.cfgeo-advanced-filters').append(filterInfo);
+						} else {
+							var filterInfo = $('<div class="cfgeo-filter-count">No submissions found matching your criteria</div>');
+							$('.cfgeo-advanced-filters').append(filterInfo);
+						}
+						
+						// Update URL without page reload
+						var newUrl = new URL(window.location);
+						newUrl.searchParams.set('form-id', filterData.form_id);
+						newUrl.searchParams.set('country-filter', filterData.country_filter);
+						newUrl.searchParams.set('city-filter', filterData.city_filter);
+						newUrl.searchParams.set('date-from', filterData.date_from);
+						newUrl.searchParams.set('date-to', filterData.date_to);
+						newUrl.searchParams.set('search-term', filterData.search_term);
+						newUrl.searchParams.set('orderby', filterData.orderby);
+						newUrl.searchParams.set('order', filterData.order);
+						newUrl.searchParams.set('paged', filterData.paged);
+						
+						window.history.pushState({}, '', newUrl);
+					} else {
+						alert('Error: ' + response.data);
+					}
+				},
+				error: function(xhr, status, error) {
+					console.log('AJAX Error:', xhr.responseText);
+					alert(cfgeo_ajax.error_message);
+				},
+				complete: function() {
+					isLoading = false;
+					$('.cfgeo-advanced-filters').removeClass('loading');
+					$('.cfgeo-loading').hide();
+					$('.cfgeo-filter-row input, .cfgeo-filter-row select').prop('disabled', false);
+				}
+			});
+		}
+
+		// Only initialize AJAX functionality if we're on the CFGEO page
+		if ($('.cfgeo-advanced-filters').length && typeof cfgeo_ajax !== 'undefined') {
+			console.log('CFGEO Debug: Initializing AJAX functionality');
+			
+			// Real-time filtering with debounce
+			$('#form-id, #country-filter, #city-filter, #date-from, #date-to').on('change', function() {
+				console.log('Filter changed:', $(this).attr('id'), $(this).val());
+				clearTimeout(filterTimeout);
+				filterTimeout = setTimeout(performAjaxFilter, 300);
+			});
+
+			// Search with debounce
+			$('#search-term').on('input', function() {
+				console.log('Search input:', $(this).val());
+				clearTimeout(filterTimeout);
+				filterTimeout = setTimeout(performAjaxFilter, 500);
+			});
+
+			// Search with Enter key
+			$('#search-term').on('keypress', function(e) {
+				if (e.which === 13) {
+					clearTimeout(filterTimeout);
+					performAjaxFilter();
+				}
+			});
+
+			// Clear filters functionality
+			$('.cfgeo-clear-filters').on('click', function(e) {
+				e.preventDefault();
+				
+				// Clear all filter values
+				$('#form-id').val('all');
+				$('#country-filter').val('');
+				$('#city-filter').val('');
+				$('#date-from').val('');
+				$('#date-to').val('');
+				$('#search-term').val('');
+				$('input[name="orderby"]').val('date');
+				$('input[name="order"]').val('DESC');
+				$('input[name="paged"]').val('1');
+				
+				// Perform filter
+				performAjaxFilter();
+			});
+
+			// Date validation
+			$('#date-from, #date-to').on('change', function() {
+				var fromDate = $('#date-from').val();
+				var toDate = $('#date-to').val();
+				
+				if (fromDate && toDate && fromDate > toDate) {
+					alert(cfgeo_ajax.date_error_message);
+					$(this).val('');
+				}
+			});
+
+			// Handle pagination clicks
+			$(document).on('click', '.tablenav-pages a', function(e) {
+				e.preventDefault();
+				var paged = $(this).data('page') || '1';
+				
+				$('input[name="paged"]').val(paged);
+				performAjaxFilter();
+			});
+
+			// Handle sorting clicks
+			$(document).on('click', '.wp-list-table th.sortable a, .wp-list-table th.sorted a', function(e) {
+				e.preventDefault();
+				var href = $(this).attr('href');
+				var url = new URL(href);
+				var orderby = url.searchParams.get('orderby') || 'date';
+				var order = url.searchParams.get('order') || 'DESC';
+				
+				$('input[name="orderby"]').val(orderby);
+				$('input[name="order"]').val(order);
+				$('input[name="paged"]').val('1'); // Reset to first page when sorting
+				performAjaxFilter();
+			});
+
+			// Initial filter count display
+			var totalPosts = $('.wp-list-table tbody tr').length;
+			if (totalPosts > 0) {
+				var filterInfo = $('<div class="cfgeo-filter-count">Showing ' + totalPosts + ' submission(s)</div>');
+				$('.cfgeo-advanced-filters').append(filterInfo);
+			}
+		} else {
+			console.log('CFGEO Debug: Not on CFGEO page or cfgeo_ajax not available, skipping AJAX initialization');
+		}
+
+		// Webhook API functionality
+		if ($('#test-webhook').length && typeof cfgeo_ajax !== 'undefined') {
+			$('#test-webhook').on('click', function() {
+				var button = $(this);
+				var originalText = button.text();
+				
+				button.prop('disabled', true).text('Testing...');
+				$('#webhook-test-result').hide();
+				
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'cfgeo_test_webhook',
+						nonce: cfgeo_ajax.webhook_test_nonce || cfgeo_ajax.nonce
+					},
+					success: function(response) {
+						if (response && response.success) {
+							var message = response.data && response.data.message ? response.data.message : 'Test completed successfully!';
+							$('#webhook-test-result').html(
+								'<div class="notice notice-success"><p>' + message + '</p></div>'
+							).show();
+						} else {
+							var message = response && response.data && response.data.message ? response.data.message : 'Test failed. Please try again.';
+							$('#webhook-test-result').html(
+								'<div class="notice notice-error"><p>' + message + '</p></div>'
+							).show();
+						}
+					},
+					error: function() {
+						$('#webhook-test-result').html(
+							'<div class="notice notice-error"><p>An error occurred while testing the webhook.</p></div>'
+						).show();
+					},
+					complete: function() {
+						button.prop('disabled', false).text(originalText);
+					}
+				});
+			});
+		}
+
+		// Load webhook logs
+		if ($('#webhook-logs').length && typeof cfgeo_ajax !== 'undefined') {
+			loadWebhookLogs();
+		}
+
+		// Clear webhook logs functionality
+		if ($('#clear-webhook-logs').length && typeof cfgeo_ajax !== 'undefined') {
+			$('#clear-webhook-logs').on('click', function() {
+				if (confirm('Are you sure you want to clear all webhook logs? This action cannot be undone.')) {
+					var button = $(this);
+					var originalText = button.text();
+					
+					button.prop('disabled', true).text('Clearing...');
+					
+					$.ajax({
+						url: ajaxurl,
+						type: 'POST',
+						data: {
+							action: 'cfgeo_clear_webhook_logs',
+							nonce: cfgeo_ajax.webhook_logs_nonce || cfgeo_ajax.nonce
+						},
+						success: function(response) {
+							if (response && response.success) {
+								// Clear the logs display
+								$('#webhook-logs').html('<p class="description">No webhook logs available yet.</p>');
+								
+								// Disable the clear button since logs are now empty
+								$('#clear-webhook-logs').prop('disabled', true);
+								
+								// Show success message
+								var message = response.data && response.data.message ? response.data.message : 'Webhook logs cleared successfully.';
+								$('#webhook-logs').before(
+									'<div class="notice notice-success" style="margin-bottom: 10px;"><p>' + message + '</p></div>'
+								);
+								
+								// Remove the notice after 3 seconds
+								setTimeout(function() {
+									$('#webhook-logs').prev('.notice').fadeOut();
+								}, 3000);
+							} else {
+								var message = response && response.data && response.data.message ? response.data.message : 'Failed to clear webhook logs.';
+								$('#webhook-logs').before(
+									'<div class="notice notice-error" style="margin-bottom: 10px;"><p>' + message + '</p></div>'
+								);
+							}
+						},
+						error: function() {
+							$('#webhook-logs').before(
+								'<div class="notice notice-error" style="margin-bottom: 10px;"><p>An error occurred while clearing webhook logs.</p></div>'
+							);
+						},
+						complete: function() {
+							button.prop('disabled', false).text(originalText);
+						}
+					});
+				}
+			});
+		}
+
+		function loadWebhookLogs() {
+			if (typeof cfgeo_ajax === 'undefined') {
+				$('#webhook-logs').html('<p class="description">Unable to load webhook logs - AJAX not available.</p>');
+				$('#clear-webhook-logs').prop('disabled', true);
+				return;
+			}
+			
+			$.ajax({
+				url: ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'cfgeo_get_webhook_logs',
+					nonce: cfgeo_ajax.webhook_logs_nonce || cfgeo_ajax.nonce
+				},
+				success: function(response) {
+					if (response && response.success && response.data && response.data.logs) {
+						var logsHtml = '';
+						if (response.data.logs.length > 0) {
+							// Enable clear button when logs exist
+							$('#clear-webhook-logs').prop('disabled', false);
+							
+							response.data.logs.forEach(function(log) {
+								var statusClass = log.success ? 'success' : 'error';
+								var statusText = log.success ? 'Success' : 'Failed';
+								logsHtml += '<div class="webhook-log-entry ' + statusClass + '">';
+								logsHtml += '<strong>' + statusText + '</strong> - ' + (log.timestamp || 'Unknown time') + '<br>';
+								logsHtml += '<small>URL: ' + (log.url || 'Unknown URL') + '</small><br>';
+								logsHtml += '<small>Response: ' + (log.response_code || 'Unknown') + ' - ' + (log.response_message || 'No message') + '</small>';
+								logsHtml += '</div>';
+							});
+						} else {
+							// Disable clear button when no logs exist
+							$('#clear-webhook-logs').prop('disabled', true);
+							logsHtml = '<p class="description">No webhook logs available yet.</p>';
+						}
+						$('#webhook-logs').html(logsHtml);
+					} else {
+						$('#webhook-logs').html('<p class="description">Unable to load webhook logs - invalid response format.</p>');
+						$('#clear-webhook-logs').prop('disabled', true);
+					}
+				},
+				error: function() {
+					$('#webhook-logs').html('<p class="description">Unable to load webhook logs.</p>');
+					$('#clear-webhook-logs').prop('disabled', true);
+				}
+			});
+		}
 	});
 
 } )( jQuery );

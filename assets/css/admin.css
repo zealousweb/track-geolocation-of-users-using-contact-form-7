@@ -1,3 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+.cfgeo-main-layout {
+	font-family: 'Poppins', sans-serif;
+}
+
+.cfgeo-main-layout .form-table th {
+	width: 300px;
+	align-items: center;
+    display: flex;
+}
+
+.cfgeo-main-layout .form-table tr {
+	display: flex;
+	align-items: center;
+}
+
+.cfgeo-main-layout .form-table td {
+	width: calc(100% - 300px);
+}
+.alignleft.actions .button,
+.alignleft.actions input[type="button"],
+.alignleft.actions input[type="submit"],
+.cfgeo-tooltip {
+    vertical-align: middle;
+}
 .cfgeo-tooltip {
 	display: inline-block;
 	width: 18px;
@@ -81,4 +107,388 @@
 }
 .sp-colorize{
 	height: 100%;
+}
+
+/* ========================================
+   Advanced Filter
+   ======================================== */
+.cfgeo-advanced-filters {
+    margin: 10px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    float: left;
+}
+.cfgeo-advanced-filters label {
+    display: inline-block;
+    width: 80px;
+    font-weight: 700;
+    color: #23282d;
+}
+/* .cfgeo-advanced-filters input[type="date"],
+.cfgeo-advanced-filters input[type="text"],
+.cfgeo-advanced-filters select {
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 13px;
+} */
+.cfgeo-advanced-filters input[type="date"]:focus,
+.cfgeo-advanced-filters input[type="text"]:focus,
+.cfgeo-advanced-filters select:focus,
+.cfgeo-filter-row input:focus,
+.cfgeo-filter-row select:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: 0;
+}
+.cfgeo-advanced-filters .button {
+    margin-right: 10px;
+}
+.alignleft.actions .button:last-child,
+.cfgeo-advanced-filters .button:last-child {
+    margin-right: 0;
+}
+.cfgeo-filter-row {
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+	align-items: center;
+	width: 31%;
+    padding-right: 15px;
+}
+
+.cfgeo-filter-row .cfgeo-label {
+	width: 100%;
+}
+.cfgeo-filter-row:last-child {
+    margin-bottom: 0;
+}
+.cfgeo-filter-buttons {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    width: 100%;
+}
+.cfgeo-filter-count {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #e7f7ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #0073aa;
+}
+.cfgeo-loading {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+.cfgeo-loading .spinner {
+    float: none;
+    margin: 0;
+}
+.cfgeo-advanced-filters.loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 999;
+}
+.cfgeo-filter-row input:disabled,
+.cfgeo-filter-row select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.alignleft.actions {
+    float: left;
+    margin: 0;
+    padding: 0;
+}
+.alignleft.actions .button {
+    margin-right: 5px;
+}
+
+
+/* ========================================
+   WEBHOOK API STYLES
+   ======================================== */
+
+.cfgeo-webhook-settings {
+	margin: 20px 0;
+}
+
+.cfgeo-webhook-settings h3 {
+	margin-bottom: 10px;
+	color: #23282d;
+}
+
+.cfgeo-webhook-settings p {
+	margin-bottom: 20px;
+	color: #666;
+}
+
+.cfgeo-webhook-info {
+	background: #f9f9f9;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	padding: 15px;
+	margin-bottom: 20px;
+}
+
+.cfgeo-webhook-info h4 {
+	margin-top: 0;
+	margin-bottom: 10px;
+	color: #23282d;
+}
+
+.cfgeo-webhook-info ul {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.cfgeo-webhook-info li {
+	margin-bottom: 5px;
+	color: #666;
+}
+
+.cfgeo-webhook-test {
+	background: #fff;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	padding: 15px;
+	margin-bottom: 20px;
+}
+
+.cfgeo-webhook-test h4 {
+	margin-top: 0;
+	margin-bottom: 10px;
+	color: #23282d;
+}
+
+.cfgeo-webhook-test p {
+	margin-bottom: 15px;
+	color: #666;
+}
+
+.cfgeo-webhook-logs {
+	background: #fff;
+	border: 1px solid #e1e1e1;
+	border-radius: 4px;
+	padding: 15px;
+}
+
+.cfgeo-webhook-logs h4 {
+	margin-top: 0;
+	margin-bottom: 10px;
+	color: #23282d;
+}
+
+.cfgeo-webhook-logs p {
+	margin-bottom: 15px;
+	color: #666;
+}
+
+.webhook-log-entry {
+	padding: 10px;
+	margin-bottom: 10px;
+	border-radius: 3px;
+	border-left: 4px solid #ddd;
+}
+
+.webhook-log-entry.success {
+	background: #f0f8f0;
+	border-left-color: #46b450;
+}
+
+.webhook-log-entry.error {
+	background: #fef7f1;
+	border-left-color: #dc3232;
+}
+
+.webhook-log-entry strong {
+	color: #23282d;
+}
+
+.webhook-log-entry small {
+	color: #666;
+	display: block;
+	margin-top: 5px;
+}
+
+#webhook-test-result {
+	margin-top: 10px;
+}
+
+#webhook-test-result .notice {
+	margin: 0;
+}
+
+/* Clear webhook logs button */
+#clear-webhook-logs {
+	margin-bottom: 10px;
+}
+
+#clear-webhook-logs:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+/* Webhook Settings Fields */
+.cfgeo-webhook-settings textarea {
+	width: 100%;
+	min-height: 100px;
+	font-family: monospace;
+}
+
+.cfgeo-webhook-settings input[type="text"] {
+	width: 100%;
+}
+
+.cfgeo-webhook-settings .description {
+	font-style: italic;
+	color: #666;
+	margin-top: 5px;
+}
+
+.cfgeo-input-text,
+.cfgeo-input-date {
+    padding: 10px 16px !important;
+    border: 1px solid #C1CFDE !important;
+    background: #FCFCFC !important;
+    height: 48px !important;
+    box-shadow: none !important;
+    color: #4A494B !important;
+    border-radius: 8px !important;
+    font-weight: 400 !important;
+    font-size: 16px !important;
+    font-family: "Poppins", sans-serif !important;
+    line-height: 1 !important;
+    width: 100% !important;
+    max-width: 500px !important;
+}
+
+.cfgeo-main-date {
+	display: flex;
+	align-items: center;
+	width: 100%;
+}
+
+.cfgeo-input-text.spectrum.with-add-on {
+	padding-left: 55px !important;
+}
+
+.cfgeo-label {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    font-family: "Poppins", sans-serif !important;
+    line-height: 1.6 !important;
+    color: #285064 !important;
+	padding-bottom: 10px !important;
+}
+
+.cfgeo-input-select {
+    line-height: 1.3 !important;
+    background: #FCFCFC url('../../assets/images/arrow.png') no-repeat right 7px top 55% !important;
+    background-size: 16px 10px !important;
+}
+
+.cfgeo-submit-btn {
+    padding: 20px 24px !important;
+    border-radius: 4px !important;
+    border: 1px solid #0074A2 !important;
+    background-color: #FFFFFF !important;
+    color: #0074A2 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    font-family: "Poppins", sans-serif !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+}
+
+.cfgeo-submit-btn:hover {
+    background-color: #0074A2 !important;
+    color: #FFFFFF !important;
+}
+
+.cfgeo-checkbox {
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: 4px !important;
+    border: 1px solid #cccccc !important;
+    background: #FFFFFF !important;
+}
+
+.cfgeo-textarea {
+	padding: 10px 16px !important;
+    border: 1px solid #C1CFDE !important;
+    background: #FCFCFC !important;
+    height: 200px !important;
+    box-shadow: none !important;
+    color: #4A494B !important;
+    border-radius: 8px !important;
+    font-weight: 400 !important;
+    font-size: 16px !important;
+    font-family: "Poppins", sans-serif !important;
+    line-height: 1.4 !important;
+    width: 100% !important;
+    max-width: 500px !important;
+}
+
+.cfgeo-main-layout .nav-tab-wrapper {
+	border-bottom: 1px solid #c3c4c7 !important;
+    margin: 0 !important;
+    padding-top: 9px !important;
+    padding-bottom: 0 !important;
+    line-height: inherit !important;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.cfgeo-main-layout .nav-tab-wrapper .nav-tab {
+	background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    color: #285064 !important;
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    font-family: "Poppins", sans-serif !important;
+    padding: 5px 5px 15px 5px !important;
+    margin-right: 12px !important;
+    margin-left: 0 !important;
+}
+
+
+.cfgeo-main-layout .nav-tab-wrapper .nav-tab-active {
+    border-bottom: 3px solid #11AAB4 !important;
+}
+
+
+@media (max-width: 720px) and (orientation: portrait) {
+    .cfgeo-main-layout .nav-tab-wrapper .nav-tab {
+        margin: 0  !important;
+        padding: 9px !important;
+    }
+	.cfgeo-main-layout .form-table td,
+	.cfgeo-main-layout .form-table th {
+		width: 100% !important;
+	}
+	.cfgeo-main-layout .form-table tr {
+		flex-wrap: wrap;
+	}
+	.cfgeo-filter-row {
+		width: 100%;
+		padding-right: 0;
+	}
 }

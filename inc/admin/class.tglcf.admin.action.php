@@ -21,13 +21,35 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 		function __construct()  {
 
-			add_action( 'init',                                     array( $this, 'action__cfgeo_init_99' ), 99 );
-			add_action( 'admin_init',                               array( $this, 'action__cfgeo_init' ) );
-			add_action( 'add_meta_boxes',                           array( $this, 'action__cfgeo_add_meta_boxes' ) );
+			add_action( 'init', array( $this, 'action__cfgeo_init_99' ), 99 );
+			
+			add_action( 'admin_init', array( $this, 'action__cfgeo_init' ) );
+			
+			add_action( 'admin_enqueue_scripts',array( $this,'action__cfgeo_admin_enqueue_scripts' ) );
+			
+			add_action( 'add_meta_boxes',array( $this, 'action__cfgeo_add_meta_boxes' ) );
+			
 			add_action( 'manage_'.CFGEO_POST_TYPE.'_posts_custom_column',  array( $this, 'action__manage_cfgeozw_data_posts_custom_column' ), 10, 2 );
-			add_action( 'pre_get_posts',                            array( $this, 'action__cfgeo_pre_get_posts' ) );
-			add_action( 'restrict_manage_posts',                    array( $this, 'action__cfgeo_restrict_manage_posts' ) );
-			add_action( 'parse_query',                              array( $this, 'action__cfgeo_parse_query' ) );
+			
+			add_action( 'pre_get_posts',array( $this, 'action__cfgeo_pre_get_posts' ) );
+			
+			add_action( 'parse_query',array( $this, 'action__cfgeo_parse_query' ) );
+			
+			// Add AJAX handlers for real-time filtering
+			add_action( 'wp_ajax_cfgeo_filter_submissions',array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
+
+			add_action( 'wp_ajax_nopriv_cfgeo_filter_submissions',array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
+			
+			// Add AJAX handlers for webhook functionality
+			add_action( 'wp_ajax_cfgeo_test_webhook',array( $this, 'action__cfgeo_ajax_test_webhook' ) );
+		
+			add_action( 'wp_ajax_cfgeo_get_webhook_logs',array( $this, 'action__cfgeo_ajax_get_webhook_logs' ) );
+		
+			add_action( 'wp_ajax_cfgeo_clear_webhook_logs',array( $this, 'action__cfgeo_ajax_clear_webhook_logs' ) );
+
+			add_action( 'manage_posts_extra_tablenav', array( $this,'cfgeo_add_extra_filters'), 10, 1 );
+
+		
 		}
 
 		/*
@@ -43,11 +65,144 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		/**
 		 * Action: admin_init
 		 *
+		 * - cfgeo_add_extra_filters
+		 * - advance filter 
+		 */
+
+		function cfgeo_add_extra_filters( $cfgeo_which ) {
+
+			global $typenow;
+
+		    // Only show on your custom post type
+		    if ( $typenow !== 'cfgeozw_data' ) {
+		        return;
+		    }
+
+		    // Only top position (before pagination)
+		    if ( $cfgeo_which !== 'top' ) {
+		        return;
+		    }
+
+		    // Check if there are any cfgeozw_data posts available
+		    $cfgeo_data_posts = get_posts(
+				array(
+					'post_type'        => 'cfgeozw_data',
+					'post_status'      => 'publish',
+					'suppress_filters' => false,
+					'posts_per_page'   => 1
+				)
+			);
+
+		    // If no cfgeozw_data posts exist, don't show the filters
+		    if ( empty( $cfgeo_data_posts ) ) {
+		        return;
+		    }
+
+		    $cfgeo_posts = get_posts(
+				array(
+					'post_type'        => 'wpcf7_contact_form',
+					'post_status'      => 'publish',
+					'suppress_filters' => false,
+					'posts_per_page'   => -1
+				)
+			);
+
+			// Get unique countries and cities for filter dropdowns
+			$cfgeo_countries = $this->get_unique_meta_values( 'cfgeo-country' );
+			$cfgeo_cities = $this->get_unique_meta_values( 'cfgeo-city' );
+
+			// Get current filter values
+			$cfgeo_selected_form = isset( $_GET['form-id'] ) ? sanitize_text_field( $_GET['form-id'] ) : '';
+			$cfgeo_selected_country = isset( $_GET['country-filter'] ) ? sanitize_text_field( $_GET['country-filter'] ) : '';
+			$cfgeo_selected_city = isset( $_GET['city-filter'] ) ? sanitize_text_field( $_GET['city-filter'] ) : '';
+			$cfgeo_date_from = isset( $_GET['date-from'] ) ? sanitize_text_field( $_GET['date-from'] ) : '';
+			$cfgeo_date_to = isset( $_GET['date-to'] ) ? sanitize_text_field( $_GET['date-to'] ) : '';
+			$cfgeo_search_term = isset( $_GET['search-term'] ) ? sanitize_text_field( $_GET['search-term'] ) : '';
+
+
+			echo '<div class="cfgeo-advanced-filters">';
+			
+			// Loading indicator
+			echo '<div class="cfgeo-loading"><div class="spinner is-active"></div></div>';
+			
+			// Hidden inputs for AJAX functionality
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'date' ) . '">';
+			echo '<input type="hidden" name="order" value="' . esc_attr( isset( $_GET['order'] ) ? $_GET['order'] : 'DESC' ) . '">';
+			echo '<input type="hidden" name="paged" value="' . esc_attr( isset( $_GET['paged'] ) ? $_GET['paged'] : '1' ) . '">';
+			
+			// Search input
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label class="cfgeo-label" for="search-term">' . esc_html__( 'Search:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<input class="cfgeo-input-text" type="text" name="search-term" id="search-term" value="' . esc_attr( $cfgeo_search_term ) . '" placeholder="' . esc_attr__( 'Search by any field...', 'track-geolocation-of-users-using-contact-form-7' ) . '" style="width: 200px;">';
+			echo '</div>';
+
+			// Form filter
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label class="cfgeo-label" for="form-id">' . esc_html__( 'Form:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select class="cfgeo-input-text cfgeo-input-select" name="form-id" id="form-id">';
+			echo '<option value="all">' . esc_html__( 'All Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+			if ( !empty( $cfgeo_posts ) ) {
+			foreach ( $cfgeo_posts as $cfgeo_post ) {
+					echo '<option value="' . esc_attr( $cfgeo_post->ID ) . '" ' . selected( $cfgeo_selected_form, $cfgeo_post->ID, false ) . '>' . esc_html( $cfgeo_post->post_title ) . '</option>';
+				}
+			}
+			echo '</select>';
+			echo '</div>';
+
+			// Country filter
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label class="cfgeo-label" class="cfgeo-label" for="country-filter">' . esc_html__( 'Country:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select class="cfgeo-input-text cfgeo-input-select" name="country-filter" id="country-filter">';
+			echo '<option value="">' . esc_html__( 'All Countries', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+			if ( !empty( $cfgeo_countries ) ) {
+				foreach ( $cfgeo_countries as $cfgeo_country ) {
+					echo '<option value="' . esc_attr( $cfgeo_country ) . '" ' . selected( $cfgeo_selected_country, $cfgeo_country, false ) . '>' . esc_html( $cfgeo_country ) . '</option>';
+				}
+			}
+			echo '</select>';
+			echo '</div>';
+
+			// City filter
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label class="cfgeo-label" for="city-filter">' . esc_html__( 'City:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<select class="cfgeo-input-text cfgeo-input-select" name="city-filter" id="city-filter">';
+			echo '<option value="">' . esc_html__( 'All Cities', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
+			if ( !empty( $cfgeo_cities ) ) {
+				foreach ( $cfgeo_cities as $cfgeo_city ) {
+					echo '<option value="' . esc_attr( $cfgeo_city ) . '" ' . selected( $cfgeo_selected_city, $cfgeo_city, false ) . '>' . esc_html( $cfgeo_city ) . '</option>';
+				}
+			}
+			echo '</select>';
+			echo '</div>';
+
+			// Date range filters
+			echo '<div class="cfgeo-filter-row">';
+			echo '<label class="cfgeo-label">' . esc_html__( 'Date Range:', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>';
+			echo '<div class="cfgeo-main-date">';
+			echo '<input class="cfgeo-input-date" type="date" name="date-from" id="date-from" value="' . esc_attr( $cfgeo_date_from ) . '" placeholder="' . esc_attr__( 'From', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '<input class="cfgeo-input-date" type="date" name="date-to" id="date-to" value="' . esc_attr( $cfgeo_date_to ) . '" placeholder="' . esc_attr__( 'To', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+			echo '</div>';
+			echo '</div>';
+
+			// Filter and Export buttons
+			echo '<div class="cfgeo-filter-buttons">';
+			echo '<input type="submit" id="export_csv" name="export_csv" class="cfgeo-submit-btn" value="' . esc_attr__( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
+ 			echo ' <button class="cfgeo-submit-btn cfgeo-clear-filters">' . esc_html__( ' Clear Filters', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
+			echo '</div>';
+
+			echo '</div>';
+
+		}
+		/**
+		 * Action: admin_init
+		 *
 		 * - Register admin min js and admin min css
 		 *
 		 */
+
+
 		function action__cfgeo_init() {
-			wp_register_style( CFGEO_PREFIX . '_admin_css', CFGEO_URL . 'assets/css/admin.min.css', array(), CFGEO_VERSION );
+			wp_register_style( CFGEO_PREFIX . '_admin_css', CFGEO_URL . 'assets/css/admin.css', array(), CFGEO_VERSION );
 			wp_register_style( CFGEO_PREFIX . '_spectrum_css', CFGEO_URL . 'assets/css/spectrum.min.css', array(), CFGEO_VERSION );
 			wp_register_script( CFGEO_PREFIX . '_spectrum_js', CFGEO_URL . 'assets/js/spectrum.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
 			wp_register_script( CFGEO_PREFIX . '_admin_js', CFGEO_URL . 'assets/js/admin.min.js', array( 'jquery-core' ), CFGEO_VERSION,true);
@@ -56,74 +211,190 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		}
 
 		/**
+		 * Action: admin_enqueue_scripts
+		 *
+		 * - Enqueue styles and scripts for CFGEO post type pages
+		 *
+		 */
+		function action__cfgeo_admin_enqueue_scripts( $hook ) {
+			$screen = get_current_screen();
+			
+			// Enqueue scripts for CFGEO post type pages or geolocation settings page
+			if ( ($screen && $screen->post_type === CFGEO_POST_TYPE) || 
+				 (isset($_GET['page']) && $_GET['page'] === 'geolocation-setting') ) {
+				
+				wp_enqueue_style( CFGEO_PREFIX . '_admin_css' );
+				wp_enqueue_style( CFGEO_PREFIX . '_spectrum_css' );
+				wp_enqueue_script( CFGEO_PREFIX . '_spectrum_js' );
+				wp_enqueue_script( CFGEO_PREFIX . '_admin_js' );
+				
+				// Localize script for AJAX
+				wp_localize_script( CFGEO_PREFIX . '_admin_js', 'cfgeo_ajax', array(
+					'nonce' => wp_create_nonce( 'cfgeo_filter_nonce' ),
+					'error_message' => __( 'An error occurred while filtering. Please try again.', 'track-geolocation-of-users-using-contact-form-7' ),
+					'date_error_message' => __( 'From date cannot be later than To date.', 'track-geolocation-of-users-using-contact-form-7' ),
+					'webhook_test_nonce' => wp_create_nonce( 'cfgeo_webhook_test_nonce' ),
+					'webhook_logs_nonce' => wp_create_nonce( 'cfgeo_webhook_logs_nonce' )
+				) );
+			}
+		}
+
+
+
+		/**
 		 * [action__cfgeo_init_99 Used to perform the CSV export functionality.]
 		 */
 		function action__cfgeo_init_99() {
 
-			if (isset( $_REQUEST['export_csv'] ) && isset( $_REQUEST['form-id'] ) && !empty( $_REQUEST['form-id'] && $_REQUEST['post_type'] == CFGEO_POST_TYPE) ) {
-				$form_id = $_REQUEST['form-id'];
+			if (isset( $_REQUEST['export_csv'] ) && $_REQUEST['post_type'] == CFGEO_POST_TYPE) {
 
-				if ( 'all' == $form_id ) {
-					add_action( 'admin_notices', array( $this, 'action__cfgeodb_admin_notices_export' ) );
-					return;
-				}
-				$args = array(
+				// Build query args based on current filters
+				$cfgeo_args = array(
 					'post_type' => CFGEO_POST_TYPE,
-					'posts_per_page' => -1
+					'posts_per_page' => -1,
+					'meta_query' => array(),
+					'date_query' => array()
 				);
 
-				$exported_data = get_posts( $args );
-				if ( empty( $exported_data ) ){
+				// Form filter
+				if ( isset( $_REQUEST['form-id'] ) && 'all' != $_REQUEST['form-id'] ) {
+					$cfgeo_args['meta_query'][] = array(
+						'key' => '_form_id',
+						'value' => sanitize_text_field( $_REQUEST['form-id'] ),
+						'compare' => '='
+					);
+				}
+
+				// Country filter
+				if ( isset( $_REQUEST['country-filter'] ) && !empty( $_REQUEST['country-filter'] ) ) {
+					$cfgeo_args['meta_query'][] = array(
+						'key' => 'cfgeo-country',
+						'value' => sanitize_text_field( $_REQUEST['country-filter'] ),
+						'compare' => '='
+					);
+				}
+
+				// City filter
+				if ( isset( $_REQUEST['city-filter'] ) && !empty( $_REQUEST['city-filter'] ) ) {
+					$cfgeo_args['meta_query'][] = array(
+						'key' => 'cfgeo-city',
+						'value' => sanitize_text_field( $_REQUEST['city-filter'] ),
+						'compare' => '='
+					);
+				}
+
+				// Date range filter
+				if ( isset( $_REQUEST['date-from'] ) || isset( $_REQUEST['date-to'] ) ) {
+					$cfgeo_date_query = array();
+					
+					if ( !empty( $_REQUEST['date-from'] ) ) {
+						$cfgeo_date_query['after'] = sanitize_text_field( $_REQUEST['date-from'] );
+					}
+					
+					if ( !empty( $_REQUEST['date-to'] ) ) {
+						$cfgeo_date_query['before'] = sanitize_text_field( $_REQUEST['date-to'] ) . ' 23:59:59';
+					}
+					
+					if ( !empty( $cfgeo_date_query ) ) {
+						$cfgeo_date_query['inclusive'] = true;
+						$cfgeo_args['date_query'] = $cfgeo_date_query;
+					}
+				}
+
+				// Search functionality
+				if ( isset( $_REQUEST['search-term'] ) && !empty( $_REQUEST['search-term'] ) ) {
+					$cfgeo_search_term = sanitize_text_field( $_REQUEST['search-term'] );
+					$cfgeo_args['s'] = $cfgeo_search_term;
+					$cfgeo_args['search-term'] = $cfgeo_search_term;
+					// Also search in meta fields
+					$cfgeo_args['meta_query'][] = array(
+						'relation' => 'OR',
+						array(
+							'key' => 'cfgeo-country',
+							'value' => $cfgeo_search_term,
+							'compare' => 'LIKE'
+						),
+						array(
+							'key' => 'cfgeo-city',
+							'value' => $cfgeo_search_term,
+							'compare' => 'LIKE'
+						),
+						array(
+							'key' => 'cfgeo-state',
+							'value' => $cfgeo_search_term,
+							'compare' => 'LIKE'
+						),
+						array(
+							'key' => 'cfgeo-lat-long',
+							'value' => $cfgeo_search_term,
+							'compare' => 'LIKE'
+						),
+						array(
+							'key' => '_form_data',
+							'value' => $cfgeo_search_term,
+							'compare' => 'LIKE'
+						),
+					);
+				}
+				//print_r($args['meta_query'] );die();
+				// Set meta query relation if we have multiple meta queries
+				if ( count( $cfgeo_args['meta_query'] ) > 1 ) {
+					$cfgeo_args['meta_query']['relation'] = 'AND';
+				}
+				$cfgeo_exported_data = get_posts( $cfgeo_args );
+				
+				if ( empty( $cfgeo_exported_data ) ){
+					add_action( 'admin_notices', array( $this, 'action__cfgeodb_admin_notices_no_data' ) );
 					return;
 				}
 
 				/** CSV Export **/
-				$filename = 'cfgeo-' . $form_id . '-' . time() . '.csv';
+				$cfgeo_filename = 'cfgeo-export-' . date('Y-m-d-H-i-s') . '.csv';
 				/** Prepare CSV Header **/
-				$data = unserialize( get_post_meta( $exported_data[0]->ID, '_form_data', true ) );
-				$header_row = $this->csv_header($data);
+				$cfgeo_data = unserialize( get_post_meta( $cfgeo_exported_data[0]->ID, '_form_data', true ) );
+				$cfgeo_header_row = $this->csv_header($cfgeo_data);
 
-				if( !empty( $exported_data ) ) {
-					foreach ( $exported_data as $entry ) {
-						$single_data = unserialize( get_post_meta( $entry->ID, '_form_data', true ) );
-						if ($single_data !== false) {
-							$row = array();
-							foreach ( $single_data as $key => $value ) {
-								if ( is_array( $value ) ) {
-									$value = implode( ', ', $value );
+				if( !empty( $cfgeo_exported_data ) ) {
+					foreach ( $cfgeo_exported_data as $cfgeo_entry ) {
+						$cfgeo_single_data = unserialize( get_post_meta( $cfgeo_entry->ID, '_form_data', true ) );
+						if ($cfgeo_single_data !== false) {
+							$cfgeo_row = array();
+							foreach ( $cfgeo_single_data as $cfgeo_key => $cfgeo_value ) {
+								if ( is_array( $cfgeo_value ) ) {
+									$cfgeo_value = implode( ', ', $cfgeo_value );
 								}
 
-								if ( $key == '_form_id' ) {
-									$meta_value = get_post_meta( $entry->ID, $key, true );
+								if ( $cfgeo_key == '_form_id' ) {
+									$cfgeo_meta_value = get_post_meta( $cfgeo_entry->ID, $cfgeo_key, true );
 
-									if ( ! empty( $meta_value ) && '_form_id' == $key ) {
-										$row[$key] = get_the_title( $meta_value );
+									if ( ! empty( $cfgeo_meta_value ) && '_form_id' == $cfgeo_key ) {
+										$cfgeo_row[$cfgeo_key] = get_the_title( $cfgeo_meta_value );
 									} else {
-										$row[$key] = $meta_value;
+										$cfgeo_row[$cfgeo_key] = $cfgeo_meta_value;
 									}
 								} else {
-									$row[$key] = $value;
+									$cfgeo_row[$cfgeo_key] = $cfgeo_value;
 								}
 							}
 						}
 
-						$data_rows[] = array_map( 'sanitize_text_field', $row );
+						$cfgeo_data_rows[] = array_map( 'sanitize_text_field', $cfgeo_row );
 					}
 				}
 
 				ob_start();
 
-				$fh = @fopen( 'php://output', 'w' );
-				fprintf( $fh, chr(0xEF) . chr(0xBB) . chr(0xBF) );
+				$cfgeo_fh = @fopen( 'php://output', 'w' );
+				fprintf( $cfgeo_fh, chr(0xEF) . chr(0xBB) . chr(0xBF) );
 				header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
 				header( 'Content-Description: File Transfer' );
 				header( 'Content-type: text/csv; charset=UTF-8' );
-				header( "Content-Disposition: attachment; filename={$filename}" );
+				header( "Content-Disposition: attachment; filename={$cfgeo_filename}" );
 				header( 'Expires: 0' );
 				header( 'Pragma: public' );
-				fputcsv( $fh, array_values(array_map('sanitize_text_field',$header_row)) );
-				foreach ( $data_rows as $data_row ) {
-					fputcsv( $fh, $data_row );
+				fputcsv( $cfgeo_fh, array_values(array_map('sanitize_text_field',$cfgeo_header_row)) );
+				foreach ( $cfgeo_data_rows as $cfgeo_data_row ) {
+					fputcsv( $cfgeo_fh, $cfgeo_data_row );
 				}
 				//fclose( $fh );
 
@@ -138,16 +409,41 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		 * @param  [type] $data [form row title]
 		 * @return [array]       [csv row title]
 		 */
-		function csv_header($data){
-			foreach ($data as $key => $value) {
-				if($key == '_form_id'){
-					$header[] = 'Form ID/Name';
+		function csv_header($cfgeo_data){
+			foreach ($cfgeo_data as $cfgeo_key => $cfgeo_value) {
+				if($cfgeo_key == '_form_id'){
+					$cfgeo_header[] = 'Form ID/Name';
 				}else{
-					$header_label = str_replace("cfgeo-", "", $key);
-					$header[] = ucwords($header_label);
+					$cfgeo_header_label = str_replace("cfgeo-", "", $cfgeo_key);
+					$cfgeo_header[] = ucwords($cfgeo_header_label);
 				}
 			}
-			return $header;
+			return $cfgeo_header;
+		}
+
+		/**
+		 * Get unique meta values for filter dropdowns
+		 * @param  string $meta_key [meta key to get unique values for]
+		 * @return array            [array of unique values]
+		 */
+		function get_unique_meta_values( $meta_key ) {
+			global $wpdb;
+			
+			$results = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT DISTINCT meta_value 
+					FROM {$wpdb->postmeta} pm 
+					INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID 
+					WHERE p.post_type = %s 
+					AND pm.meta_key = %s 
+					AND pm.meta_value != '' 
+					ORDER BY meta_value ASC",
+					CFGEO_POST_TYPE,
+					$meta_key
+				)
+			);
+			
+			return $results;
 		}
 
 
@@ -184,6 +480,11 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					echo !empty( $state ) ? esc_html( $state ) : '';
 					break;
 
+				case 'city' :
+					$city = get_post_meta( $post_id , 'cfgeo-city', true );
+					echo !empty( $city ) ? esc_html( $city ) : '';
+					break;
+
 				case 'lat_long' :
 					$lat_long = get_post_meta( $post_id , 'cfgeo-lat-long', true );
 					echo !empty( $lat_long ) ? esc_html( $lat_long ) : '';
@@ -214,56 +515,28 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			$orderby = $query->get( 'orderby' );
 
 			if ( 'country' == $orderby ) {
-				$query->set( 'meta_key', 'country' );
+				$query->set( 'meta_key', 'cfgeo-country' );
+				$query->set( 'orderby', 'meta_value' );
+			} elseif ( 'state' == $orderby ) {
+				$query->set( 'meta_key', 'cfgeo-state' );
+				$query->set( 'orderby', 'meta_value' );
+			} elseif ( 'city' == $orderby ) {
+				$query->set( 'meta_key', 'cfgeo-city' );
+				$query->set( 'orderby', 'meta_value' );
+			} elseif ( 'lat_long' == $orderby ) {
+				$query->set( 'meta_key', 'cfgeo-lat-long' );
+				$query->set( 'orderby', 'meta_value' );
+			} elseif ( 'api_key_used' == $orderby ) {
+				$query->set( 'meta_key', 'cfgeo-api-used' );
 				$query->set( 'orderby', 'meta_value' );
 			}
 		}
 
-		/**
-		 * Action: restrict_manage_posts
-		 *
-		 * - Used to creat filter by form and export functionality.
-		 *
-		 * @method action__cfgeo_restrict_manage_posts
-		 *
-		 * @param  string $post_type
-		 */
-		function action__cfgeo_restrict_manage_posts( $post_type ) {
-
-			if ( CFGEO_POST_TYPE != $post_type ) {
-				return;
-			}
-
-			$posts = get_posts(
-				array(
-					'post_type'        => 'wpcf7_contact_form',
-					'post_status'      => 'publish',
-					'suppress_filters' => false,
-					'posts_per_page'   => -1
-				)
-			);
-
-			if ( empty( $posts ) ) {
-				return;
-			}
-
-			$selected = ( isset( $_GET['form-id']) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash ($_POST['nonce'] ) ) , 'other_setting' ) ) ? sanitize_text_field($_GET['form-id']) : '' ;
-
-			echo '<select name="form-id" id="form-id">';
-			echo '<option value="all">' . esc_html( 'Select Forms', 'track-geolocation-of-users-using-contact-form-7' ) . '</option>';
-			foreach ( $posts as $post ) {
-				echo '<option value="' . esc_attr( $post->ID ) . '" ' . selected( $selected, $post->ID, false ) . '>' . esc_html( $post->post_title ) . '</option>';
-			}
-			echo '</select>';
-
-			echo '<input type="submit" id="export_csv" name="export_csv" class="button action" value="'. esc_html( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
-
-		}
-
+		
 		/**
 		 * Action: parse_query
 		 *
-		 * - Filter data by form id.
+		 * - Filter data by form id, country, city, date range and search term.
 		 *
 		 * @method action__cfgeo_parse_query
 		 *
@@ -274,9 +547,93 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				return;
 			}
 
-			if (is_admin() && isset( $_GET['form-id'] )	&& 'all' != $_GET['form-id'] ) {
-				$query->query_vars['meta_value']   = sanitize_text_field($_GET['form-id']);
-				$query->query_vars['meta_compare'] = '=';
+			// Build meta query array
+			$meta_query = array();
+
+			// Form filter
+			if (is_admin() && isset( $_GET['form-id'] ) && 'all' != $_GET['form-id'] ) {
+				$meta_query[] = array(
+					'key' => '_form_id',
+					'value' => sanitize_text_field( $_GET['form-id'] ),
+					'compare' => '='
+				);
+			}
+
+			// Country filter
+			if (is_admin() && isset( $_GET['country-filter'] ) && !empty( $_GET['country-filter'] ) ) {
+				$meta_query[] = array(
+					'key' => 'cfgeo-country',
+					'value' => sanitize_text_field( $_GET['country-filter'] ),
+					'compare' => '='
+				);
+			}
+
+			// City filter
+			if (is_admin() && isset( $_GET['city-filter'] ) && !empty( $_GET['city-filter'] ) ) {
+				$meta_query[] = array(
+					'key' => 'cfgeo-city',
+					'value' => sanitize_text_field( $_GET['city-filter'] ),
+					'compare' => '='
+				);
+			}
+
+			// Date range filter
+			if (is_admin() && ( isset( $_GET['date-from'] ) || isset( $_GET['date-to'] ) ) ) {
+				$date_query = array();
+				
+				if ( !empty( $_GET['date-from'] ) ) {
+					$date_query['after'] = sanitize_text_field( $_GET['date-from'] );
+				}
+				
+				if ( !empty( $_GET['date-to'] ) ) {
+					$date_query['before'] = sanitize_text_field( $_GET['date-to'] ) . ' 23:59:59';
+				}
+				
+				if ( !empty( $date_query ) ) {
+					$date_query['inclusive'] = true;
+					$query->set( 'date_query', $date_query );
+				}
+			}
+
+			// Search functionality
+			if (is_admin() && isset( $_GET['search-term'] ) && !empty( $_GET['search-term'] ) ) {
+				$search_term = sanitize_text_field( $_GET['search-term'] );
+				
+				// Search in post title and content
+				$query->set( 's', $search_term );
+				
+				// Also search in meta fields
+				$meta_query[] = array(
+					'relation' => 'OR',
+					array(
+						'key' => 'cfgeo-country',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					array(
+						'key' => 'cfgeo-city',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					array(
+						'key' => 'cfgeo-state',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					array(
+						'key' => 'cfgeo-lat-long',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					)
+				);
+			}
+
+			// Set meta query if we have any
+			if ( !empty( $meta_query ) ) {
+				if ( count( $meta_query ) > 1 ) {
+					$meta_query['relation'] = 'AND';
+				}
+				$query->set( 'meta_query', $meta_query );
 			}
 
 		}
@@ -291,7 +648,22 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 		function action__cfgeodb_admin_notices_export() {
 			echo '<div class="error">' .
 				'<p>' .
-					esc_html( 'Please select Form to export.', 'track-geolocation-of-users-using-contact-form-7' ) .
+					esc_html__( 'Please select Form to export.', 'track-geolocation-of-users-using-contact-form-7' ) .
+				'</p>' .
+			'</div>';
+		}
+
+		/**
+		 * Action: admin_notices
+		 *
+		 * - Added notice when no data found for export.
+		 *
+		 * @method action__cfgeodb_admin_notices_no_data
+		 */
+		function action__cfgeodb_admin_notices_no_data() {
+			echo '<div class="notice notice-warning is-dismissible">' .
+				'<p>' .
+					esc_html__( 'No data found matching the current filters. Please adjust your filter criteria and try again.', 'track-geolocation-of-users-using-contact-form-7' ) .
 				'</p>' .
 			'</div>';
 		}
@@ -326,7 +698,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 				if ( !empty( $meta['_form_id'] ) ) {
 					echo '<tr class="form-field">' .
 						'<th scope="row">' .
-							'<label for="hcf_author">' . esc_html( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+							'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Form ID/Name', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 						'</th>' .
 						'<td>' .
 							(
@@ -350,7 +722,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 							echo '<tr class="form-field">' .
 									'<th scope="row">' .
-										'<label for="hcf_author">' . esc_html( sprintf( '%s', ucwords($rmv_cfgeo) ), 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+										'<label class="cfgeo-label" for="hcf_author">' . esc_html( sprintf( '%s', ucwords($rmv_cfgeo) ), 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 									'</th>' .
 									'<td>' . esc_html( $value ) .
 									'</td>' .
@@ -361,7 +733,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if (get_post_meta( $post->ID, 'cfgeo-debug-ipstack', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . esc_html( 'Debug ipstack', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Debug ipstack', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-ipstack', true ) ) .
 								'</td>' .
@@ -371,7 +743,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if (get_post_meta( $post->ID, 'cfgeo-debug-ipapi', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . esc_html( 'Debug ipapi', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Debug ipapi', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-ipapi', true ) ) .
 								'</td>' .
@@ -381,7 +753,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					if (get_post_meta( $post->ID, 'cfgeo-debug-keycdn', true )) {
 						echo '<tr class="form-field">' .
 								'<th scope="row">' .
-									'<label for="hcf_author">' . esc_html( 'Debug Keycdn', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
+									'<label class="cfgeo-label" for="hcf_author">' . esc_html( 'Debug Keycdn', 'track-geolocation-of-users-using-contact-form-7' ) . '</label>' .
 								'</th>' .
 								'<td>' . esc_html( get_post_meta( $post->ID, 'cfgeo-debug-keycdn', true ) ) .
 								'</td>' .
@@ -432,6 +804,421 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 					)
 				) .
 			'</div>';
+		}
+
+		/**
+		 * AJAX handler for real-time filtering
+		 *
+		 * @method action__cfgeo_ajax_filter_submissions
+		 */
+		function action__cfgeo_ajax_filter_submissions() {
+			// Verify nonce
+			if ( !wp_verify_nonce( $_POST['nonce'], 'cfgeo_filter_nonce' ) ) {
+				error_log('CFGEO AJAX: Nonce verification failed');
+				wp_die( 'Security check failed' );
+			}
+
+			// Check permissions
+			if ( !current_user_can( 'manage_options' ) ) {
+				wp_die( 'Insufficient permissions' );
+			}
+
+			// Build query args
+			$args = array(
+				'post_type' => CFGEO_POST_TYPE,
+				'posts_per_page' => 20,
+				'paged' => isset( $_POST['paged'] ) ? intval( $_POST['paged'] ) : 1,
+				'meta_query' => array(),
+				'date_query' => array()
+			);
+
+			// Form filter
+			if ( isset( $_POST['form_id'] ) && 'all' != $_POST['form_id'] ) {
+				$args['meta_query'][] = array(
+					'key' => '_form_id',
+					'value' => sanitize_text_field( $_POST['form_id'] ),
+					'compare' => '='
+				);
+			}
+
+			// Country filter
+			if ( isset( $_POST['country_filter'] ) && !empty( $_POST['country_filter'] ) ) {
+				$args['meta_query'][] = array(
+					'key' => 'cfgeo-country',
+					'value' => sanitize_text_field( $_POST['country_filter'] ),
+					'compare' => '='
+				);
+			}
+
+			// City filter
+			if ( isset( $_POST['city_filter'] ) && !empty( $_POST['city_filter'] ) ) {
+				$args['meta_query'][] = array(
+					'key' => 'cfgeo-city',
+					'value' => sanitize_text_field( $_POST['city_filter'] ),
+					'compare' => '='
+				);
+			}
+
+			// Date range filter
+			if ( isset( $_POST['date_from'] ) || isset( $_POST['date_to'] ) ) {
+				$date_query = array();
+				
+				if ( !empty( $_POST['date_from'] ) ) {
+					$date_query['after'] = sanitize_text_field( $_POST['date_from'] );
+				}
+				
+				if ( !empty( $_POST['date_to'] ) ) {
+					$date_query['before'] = sanitize_text_field( $_POST['date_to'] ) . ' 23:59:59';
+				}
+				
+				if ( !empty( $date_query ) ) {
+					$date_query['inclusive'] = true;
+					$args['date_query'] = $date_query;
+				}
+			}
+
+			// Search functionality
+			if ( isset( $_POST['search_term'] ) && !empty( $_POST['search_term'] ) ) {
+				$search_term = sanitize_text_field( $_POST['search_term'] );
+				$args['search_term'] = $search_term;
+				// Also search in meta fields
+				$args['meta_query'][] = array(
+					'relation' => 'OR',
+					array(
+						'key' => 'cfgeo-country',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					array(
+						'key' => 'cfgeo-city',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					array(
+						'key' => 'cfgeo-state',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					array(
+						'key' => 'cfgeo-lat-long',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					array(
+						'key' => '_form_data',
+						'value' => $search_term,
+						'compare' => 'LIKE'
+					),
+					
+				);
+			}
+
+			// Set meta query relation if we have multiple meta queries
+			if ( count( $args['meta_query'] ) > 1 ) {
+				$args['meta_query']['relation'] = 'AND';
+			}
+
+			// Handle sorting
+			if ( isset( $_POST['orderby'] ) ) {
+				$orderby = sanitize_text_field( $_POST['orderby'] );
+				$order = isset( $_POST['order'] ) ? sanitize_text_field( $_POST['order'] ) : 'DESC';
+				
+				if ( in_array( $orderby, array( 'country', 'state', 'city', 'lat_long', 'api_key_used' ) ) ) {
+					$args['meta_key'] = 'cfgeo-' . str_replace( '_', '-', $orderby );
+					$args['orderby'] = 'meta_value';
+					$args['order'] = $order;
+				} else {
+					$args['orderby'] = $orderby;
+					$args['order'] = $order;
+				}
+			}
+
+			// Get posts
+			$query = new WP_Query( $args );
+			$posts = $query->posts;
+			$total_posts = $query->found_posts;
+
+			// Generate HTML for table rows
+			$html = '';
+			if ( !empty( $posts ) ) {
+				foreach ( $posts as $post ) {
+					$html .= '<tr id="post-' . $post->ID . '" class="iedit author-self level-0 post-' . $post->ID . ' type-' . CFGEO_POST_TYPE . ' status-publish hentry">';
+					
+					// Checkbox
+					$html .= '<td class="check-column"><input class="cfgeo-checkbox" type="checkbox" name="post[]" value="' . $post->ID . '"></td>';
+					
+					// Title
+					$title = get_the_title( $post->ID );
+					$html .= '<td class="post-title page-title column-title"><strong><a href="' . get_edit_post_link( $post->ID ) . '">' . esc_html( $title ) . '</a></strong></td>';
+					
+					// Country
+					$country = get_post_meta( $post->ID, 'cfgeo-country', true );
+					$html .= '<td class="country column-country">' . esc_html( $country ) . '</td>';
+					
+					// State
+					$state = get_post_meta( $post->ID, 'cfgeo-state', true );
+					$html .= '<td class="state column-state">' . esc_html( $state ) . '</td>';
+					
+					// City
+					$city = get_post_meta( $post->ID, 'cfgeo-city', true );
+					$html .= '<td class="city column-city">' . esc_html( $city ) . '</td>';
+					
+					// Lat/Long
+					$lat_long = get_post_meta( $post->ID, 'cfgeo-lat-long', true );
+					$html .= '<td class="lat_long column-lat_long">' . esc_html( $lat_long ) . '</td>';
+					
+					// API Used
+					$api_used = get_post_meta( $post->ID, 'cfgeo-api-used', true );
+					$html .= '<td class="api_key_used column-api_key_used">' . esc_html( $api_used ) . '</td>';
+					
+					// Date
+					$html .= '<td class="date column-date">' . get_the_date( '', $post->ID ) . '</td>';
+					
+					$html .= '</tr>';
+				}
+			} else {
+				$html = '<tr><td colspan="8" style="text-align: center; padding: 20px;">' . esc_html__( 'No submissions found matching your criteria.', 'track-geolocation-of-users-using-contact-form-7' ) . '</td></tr>';
+			}
+
+			// Generate pagination
+			$pagination = '';
+			if ( $total_posts > 20 ) {
+				$total_pages = ceil( $total_posts / 20 );
+				$current_page = $args['paged'];
+				
+				$pagination = '<div class="tablenav-pages">';
+				$pagination .= '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_posts, 'track-geolocation-of-users-using-contact-form-7' ), number_format_i18n( $total_posts ) ) . '</span>';
+				
+				if ( $total_pages > 1 ) {
+					$pagination .= '<span class="pagination-links">';
+					
+					// Previous page
+					if ( $current_page > 1 ) {
+						$pagination .= '<a class="prev-page" href="#" data-page="' . ( $current_page - 1 ) . '">&lsaquo;</a>';
+					}
+					
+					// Page numbers
+					$start_page = max( 1, $current_page - 2 );
+					$end_page = min( $total_pages, $current_page + 2 );
+					
+					for ( $i = $start_page; $i <= $end_page; $i++ ) {
+						if ( $i == $current_page ) {
+							$pagination .= '<span class="paging-input"><span class="tablenav-paging-text">' . $i . '</span></span>';
+						} else {
+							$pagination .= '<a class="paging-input" href="#" data-page="' . $i . '">' . $i . '</a>';
+						}
+					}
+					
+					// Next page
+					if ( $current_page < $total_pages ) {
+						$pagination .= '<a class="next-page" href="#" data-page="' . ( $current_page + 1 ) . '">&rsaquo;</a>';
+					}
+					
+					$pagination .= '</span>';
+				}
+				
+				$pagination .= '</div>';
+			}
+
+			// Debug logging
+			error_log('CFGEO AJAX: Sending response with ' . $total_posts . ' posts');
+			
+			// Send response
+			wp_send_json_success( array(
+				'html' => $html,
+				'pagination' => $pagination,
+				'total' => $total_posts
+			) );
+		}
+
+		/**
+		 * AJAX handler for testing webhook
+		 *
+		 * @method action__cfgeo_ajax_test_webhook
+		 */
+		function action__cfgeo_ajax_test_webhook() {
+			// Verify nonce - check both possible nonce names
+			$nonce_valid = false;
+			if (isset($_POST['nonce'])) {
+				$nonce_valid = wp_verify_nonce($_POST['nonce'], 'cfgeo_filter_nonce') || 
+							   wp_verify_nonce($_POST['nonce'], 'cfgeo_webhook_test_nonce');
+			}
+			
+			if (!$nonce_valid) {
+				wp_send_json_error(array(
+					'message' => __('Security check failed. Please refresh the page and try again.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check permissions
+			if ( !current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(array(
+					'message' => __('Insufficient permissions to perform this action.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check if webhooks are enabled
+			if (!get_option('cfgeo_webhook_enabled')) {
+				wp_send_json_error( array(
+					'message' => __( 'Webhooks are not enabled. Please enable webhooks first.', 'track-geolocation-of-users-using-contact-form-7' )
+				) );
+			}
+
+			// Get webhook URLs
+			$webhook_urls = get_option('cfgeo_webhook_urls');
+			if (empty($webhook_urls)) {
+				wp_send_json_error( array(
+					'message' => __( 'No webhook URLs configured. Please add webhook URLs first.', 'track-geolocation-of-users-using-contact-form-7' )
+				) );
+			}
+
+			// Prepare test payload
+			$test_payload = array(
+				'timestamp' => current_time('c'),
+				'site_url' => get_site_url(),
+				'form_data' => array(
+					'test_field' => 'Test Value',
+					'email' => 'test@example.com'
+				),
+				'geolocation' => array(
+					'country' => 'United States',
+					'state' => 'California',
+					'city' => 'San Francisco',
+					'latitude' => '37.7749',
+					'longitude' => '-122.4194',
+					'lat_long' => '37.7749,-122.4194',
+					'ip_address' => '127.0.0.1'
+				),
+				'user_agent' => 'Test Webhook',
+				'ip_address' => '127.0.0.1',
+				'test_mode' => true
+			);
+
+			// Add webhook secret if configured
+			$webhook_secret = get_option('cfgeo_webhook_secret');
+			if (!empty($webhook_secret)) {
+				$test_payload['signature'] = hash_hmac('sha256', wp_json_encode($test_payload), $webhook_secret);
+			}
+
+			// Get timeout setting
+			$timeout = get_option('cfgeo_webhook_timeout', 30);
+			$timeout = intval($timeout);
+			if ($timeout < 5) $timeout = 5;
+			if ($timeout > 60) $timeout = 60;
+
+			// Split URLs by line
+			$urls = array_filter(array_map('trim', explode("\n", $webhook_urls)));
+			$success_count = 0;
+			$total_count = count($urls);
+
+			foreach ($urls as $url) {
+				if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+					continue;
+				}
+
+				$args = array(
+					'body' => wp_json_encode($test_payload),
+					'timeout' => $timeout,
+					'headers' => array(
+						'Content-Type' => 'application/json',
+						'User-Agent' => 'CF7-Geolocation-Webhook/1.0'
+					)
+				);
+
+				$response = wp_remote_post($url, $args);
+				$success = !is_wp_error($response) && wp_remote_retrieve_response_code($response) >= 200 && wp_remote_retrieve_response_code($response) < 300;
+
+				if ($success) {
+					$success_count++;
+				}
+			}
+
+			if ($success_count > 0) {
+				wp_send_json_success( array(
+					'message' => sprintf(
+						__( 'Test completed successfully! %d out of %d webhooks responded successfully.', 'track-geolocation-of-users-using-contact-form-7' ),
+						$success_count,
+						$total_count
+					)
+				) );
+			} else {
+				wp_send_json_error( array(
+					'message' => __( 'Test failed. None of the configured webhooks responded successfully. Please check your webhook URLs and try again.', 'track-geolocation-of-users-using-contact-form-7' )
+				) );
+			}
+		}
+
+		/**
+		 * AJAX handler for getting webhook logs
+		 *
+		 * @method action__cfgeo_ajax_get_webhook_logs
+		 */
+		function action__cfgeo_ajax_get_webhook_logs() {
+			// Verify nonce - check both possible nonce names
+			$nonce_valid = false;
+			if (isset($_POST['nonce'])) {
+				$nonce_valid = wp_verify_nonce($_POST['nonce'], 'cfgeo_filter_nonce') || 
+							   wp_verify_nonce($_POST['nonce'], 'cfgeo_webhook_logs_nonce');
+			}
+			
+			if (!$nonce_valid) {
+				wp_send_json_error(array(
+					'message' => __('Security check failed. Please refresh the page and try again.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check permissions
+			if ( !current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(array(
+					'message' => __('Insufficient permissions to perform this action.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			$logs = get_option('cfgeo_webhook_logs', array());
+			
+			// Format timestamps for display
+			foreach ($logs as &$log) {
+				$timestamp = strtotime($log['timestamp']);
+				$log['timestamp'] = $timestamp ? date('Y-m-d H:i:s', $timestamp) : $log['timestamp'];
+			}
+
+			wp_send_json_success( array(
+				'logs' => $logs
+			) );
+		}
+
+		/**
+		 * AJAX handler for clearing webhook logs
+		 *
+		 * @method action__cfgeo_ajax_clear_webhook_logs
+		 */
+		function action__cfgeo_ajax_clear_webhook_logs() {
+			// Verify nonce - check both possible nonce names
+			$nonce_valid = false;
+			if (isset($_POST['nonce'])) {
+				$nonce_valid = wp_verify_nonce($_POST['nonce'], 'cfgeo_filter_nonce') || 
+							   wp_verify_nonce($_POST['nonce'], 'cfgeo_webhook_logs_nonce');
+			}
+			
+			if (!$nonce_valid) {
+				wp_send_json_error(array(
+					'message' => __('Security check failed. Please refresh the page and try again.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Check permissions
+			if ( !current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(array(
+					'message' => __('Insufficient permissions to perform this action.', 'track-geolocation-of-users-using-contact-form-7')
+				));
+			}
+
+			// Clear the webhook logs
+			delete_option('cfgeo_webhook_logs');
+
+			wp_send_json_success( array(
+				'message' => __('Webhook logs have been cleared successfully.', 'track-geolocation-of-users-using-contact-form-7')
+			) );
 		}
 	}
 
