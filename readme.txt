@@ -4,11 +4,11 @@ Contributors: zealopensource
 Donate Link: http://www.zealousweb.com/payment/
 Tags: geolocation,track geolocation,Google Maps
 Requires at least: 4.9 or higher
-Tested up to: 6.8
-Stable tag: 3.0.0
+Tested up to: 6.9
+Stable tag: 3.0.1
 Requires PHP: 7.0
 License: GPL-3.0-or-later
-Version: 3.0.0
+Version: 3.0.1
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Track Geolocation Of Users Using Contact Form 7 allows you to get geolocation information with their form submission.
@@ -80,6 +80,10 @@ Our professional impassioned Wordpress experts provide profound and customer-ori
 Thank you for choosing a Plugin developed by <strong>[ZealousWeb](https://www.zealousweb.com)</strong>!
 
 == Changelog ==
+
+= 3.0.1 =
+* Tested with the latest version of WordPress (6.9).
+* Tested with the latest version of Contact Form 7 (6.1.4).
 
 = 3.0.0 =
 * Advanced Filtering & Search - Quickly locate form submissions with filters for Country, City, and Submission Date.

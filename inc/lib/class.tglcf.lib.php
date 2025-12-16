@@ -32,7 +32,7 @@ if ( !class_exists( 'cfgeo_Lib' ) ) {
 
 			
 			// Add webhook send cron hook
-			add_action( 'cfgeo_send_webhook', array( $this, 'cfgeo_send_webhook_data' ) );
+			add_action( 'cfgeo_send_webhook', array( $this, 'cfgeo_send_webhook_data' ),10,2 );
 
 		}
 
