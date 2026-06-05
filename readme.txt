@@ -65,9 +65,15 @@ Installing the plugin is easy. Just follow these steps:
 5. When it's finished, activate the plugin via the prompt. A message will display confirming activation was successful.
 
 == Screenshots ==
-1. Screenshot 'screenshot-1.png' shows all the possible options available for this plugin.
-2. Screenshot 'screenshot-2.png' shows setting option to be enabled to get Google Map static image in the email.
-3. Screenshot 'screenshot-3.png' This area shows a detailed graph on the basis of submitted forms.
+1. shows the Geolocation Details page with filters for search, form, country, city, and date range, along with the export CSV option.
+2. shows the submitted geolocation details list, including country, state, city, latitude/longitude, API source, and submitted date.
+3. shows the Geolocation Settings page with options for debug mode, graph color, Google Map API key, and IPStack access token.
+4. shows the Submission Graph tab, where form submission locations are displayed on a world map.
+5. shows the Webhook API settings, where users can enable webhook API, add webhook URLs, and set a webhook secret key.
+6. shows the Webhook API Configuration page with webhook usage details, test webhook option, and webhook logs.
+7. shows the Shortcode Info tab with available geolocation shortcodes for email output.
+8. shows additional shortcode options for country, state, city, and Google map static image.
+
 
 = Getting Help From Our Support System =
 
