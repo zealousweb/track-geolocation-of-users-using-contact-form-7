@@ -37,7 +37,14 @@ if(isset($_GET["tab"]) || isset( $_GET['nonce'] ) && ! wp_verify_nonce( sanitize
 ?>
 <div class="wrap cfgeo-main-layout">
 	<div id="icon-options-general" class="icon32"></div>
-	<h2><?php echo esc_html__( self::$cfgeo_activation_menuname, 'track-geolocation-of-users-using-contact-form-7' ); ?></h2>
+	<div class="cfgeo-help-card">
+		<h2><?php echo esc_html__( self::$cfgeo_activation_menuname, 'track-geolocation-of-users-using-contact-form-7' ); ?></h2>
+		<div class="cfgeo-help-card-footer">
+			<a class="cfgeo-primary-btn" href="https://support.zealousweb.com/portal/en/home" target="_blank" rel="noopener noreferrer">
+				<?php esc_html_e( 'Open Support Ticket', 'track-geolocation-of-users-using-contact-form-7' ); ?>
+			</a>
+		</div>
+	</div>
 	<h2 class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-setting' ); ?>" class="nav-tab <?php echo $cfgeo_active_tab == 'cfgeo-setting' ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Geolocation Settings', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
 		<a href="<?php echo esc_url( '?page=geolocation-setting&tab=cfgeo-submission-graph' ); ?>" class="nav-tab <?php echo esc_attr( $cfgeo_active_tab == 'cfgeo-submission-graph' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html__( 'Submission Graph', 'track-geolocation-of-users-using-contact-form-7' ); ?></a>
