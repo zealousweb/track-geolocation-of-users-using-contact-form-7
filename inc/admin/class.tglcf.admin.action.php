@@ -21,7 +21,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 		function __construct()  {
 
-			add_action( 'init', array( $this, 'action__cfgeo_init_99' ), 99 );
+			add_action( 'admin_init', array( $this, 'action__cfgeo_init_99' ), 99 );
 			
 			add_action( 'admin_init', array( $this, 'action__cfgeo_init' ) );
 			
@@ -35,10 +35,8 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 			
 			add_action( 'parse_query',array( $this, 'action__cfgeo_parse_query' ) );
 			
-			// Add AJAX handlers for real-time filtering
+			// Add AJAX handlers for real-time filtering (authenticated admins only)
 			add_action( 'wp_ajax_cfgeo_filter_submissions',array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
-
-			add_action( 'wp_ajax_nopriv_cfgeo_filter_submissions',array( $this, 'action__cfgeo_ajax_filter_submissions' ) );
 			
 			// Add AJAX handlers for webhook functionality
 			add_action( 'wp_ajax_cfgeo_test_webhook',array( $this, 'action__cfgeo_ajax_test_webhook' ) );
@@ -186,6 +184,7 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 			// Filter and Export buttons
 			echo '<div class="cfgeo-filter-buttons">';
+			wp_nonce_field( 'cfgeo_export_csv', 'cfgeo_export_nonce' );
 			echo '<input type="submit" id="export_csv" name="export_csv" class="cfgeo-submit-btn" value="' . esc_attr__( 'Export CSV', 'track-geolocation-of-users-using-contact-form-7' ) . '">';
  			echo ' <button class="cfgeo-submit-btn cfgeo-clear-filters">' . esc_html__( ' Clear Filters', 'track-geolocation-of-users-using-contact-form-7' ) . '</button>';
 			echo '</div>';
@@ -243,10 +242,22 @@ if ( !class_exists( 'CFGEO_Admin_Action' ) ) {
 
 		/**
 		 * [action__cfgeo_init_99 Used to perform the CSV export functionality.]
+		 *
+		 * Restricted to authenticated administrators with a valid nonce.
 		 */
 		function action__cfgeo_init_99() {
 
-			if (isset( $_REQUEST['export_csv'] ) && $_REQUEST['post_type'] == CFGEO_POST_TYPE) {
+			if ( isset( $_REQUEST['export_csv'] ) && isset( $_REQUEST['post_type'] ) && $_REQUEST['post_type'] == CFGEO_POST_TYPE ) {
+
+				if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+					wp_die(
+						esc_html__( 'You do not have permission to export this data.', 'track-geolocation-of-users-using-contact-form-7' ),
+						esc_html__( 'Forbidden', 'track-geolocation-of-users-using-contact-form-7' ),
+						array( 'response' => 403 )
+					);
+				}
+
+				check_admin_referer( 'cfgeo_export_csv', 'cfgeo_export_nonce' );
 
 				// Build query args based on current filters
 				$cfgeo_args = array(
