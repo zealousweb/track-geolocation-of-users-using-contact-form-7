@@ -4,7 +4,7 @@ Contributors: zealopensource
 Donate Link: http://www.zealousweb.com/payment/
 Tags: geolocation,track geolocation,Google Maps
 Requires at least: 4.9 or higher
-Tested up to: 7.0
+Tested up to: 7.1.2
 Stable tag: 3.0.3
 Requires PHP: 7.0
 License: GPL-3.0-or-later
